@@ -1,3 +1,5 @@
+#+STARTUP: overview
+
 * Fix alignment problems at the ends
 ** 1. Generate an alignment
 #+BEGIN_SRC bash
