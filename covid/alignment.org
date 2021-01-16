@@ -89,8 +89,9 @@ PRUNED_SUBSET_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
 odgi viz -i  $SUBSET_PRUNED_SORTED_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 1080
 #+END_SRC
 
-You get the figure [[fig:99-sample-msa]] below.
-#+CAPTION[RSV Capsid]: 99 sample MSA
+You get the MSA figure below.
+
+#+CAPTION: 99 sample MSA
 #+NAME: fig:99-sample-msa
 [[../figures/covid/relabeledSeqs_99_subset_pruned_sorted.png]]
 
@@ -106,8 +107,9 @@ SUBSET_PRUNED_SORTED_GFA_GRAPH=${DATASET_DIR}/qc.subset_pruned_sorted.gfa
 odgi view -i $SUBSET_PRUNED_SORTED_ODGI_GRAPH -g > $SUBSET_PRUNED_SORTED_GFA_GRAPH
 #+END_SRC
 
-View it in bandage to see some bubbles and  such as the ones in figure [[fig:some-bubbles]]  below.
-#+CAPTION[RSV Capsid]: Some bubbles viewed in bandage
+View it in bandage to see some bubbles and  such as the ones below.
+
+#+CAPTION: Some bubbles viewed in bandage
 #+NAME: fig:some-bubbles
 [[../figures/covid/some_bubbles.png]]
 
