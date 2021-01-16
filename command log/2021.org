@@ -560,6 +560,7 @@ odgi viz -i  $PRUNED_SUBSET_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 108
 
 *** Local
 
+Inspect visualization
 #+BEGIN_SRC bash
 VIZ_FILE=relabeledSeqs_subset_pruned_sorted.png
 REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc
@@ -568,4 +569,13 @@ LOCAL_FIGURE_DIR=${HOME}/src/org/bio-notes/figures
 FIGURE=${LOCAL_FIGURE_DIR}/${VIZ_FILE}
 
 rsync -azP  pingu:${REMOTE_ODGI_VIZ} $FIGURE
+#+END_SRC
+
+Inspect the GFA
+
+#+BEGIN_SRC bash
+SUBSET_PRUNED_SORTED_GFA_GRAPH=${REMOTE_DATASET_DIR}/qc.subset_pruned_sorted.gfa
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data
+
+rsync -azP pingu:${SUBSET_PRUNED_SORTED_GFA_GRAPH} $LOCAL_DATA_DIR
 #+END_SRC

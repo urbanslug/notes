@@ -46,34 +46,12 @@ odgi viz -i  $SORTED_UNCHOPPED_ODGI_GRAPH -o $SORTED_UNCHOPPED_ODGI_VIZ -x 1920 
 #+END_SRC
 
 
-* Fix alignment problems in the middle
-** Method 1: sorting
+* Fix alignment problems in the middle by pruning and sorting
 
-Seems to improve alignment in the middle
+To make shorten the feedback loop subset the data. In this case we want to end up with 99 sequences
 
-*** a. Sort again using -Y
-
-/Takes a while/
-
-#+BEGIN_SRC bash
-RESORTED_UNCHOPPED_ODGI_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.resorted.og
-
-odgi sort -Y -i $SORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_GRAPH
-#+END_SRC
-
-*** b. Visualize the re-sorted graph
-#+BEGIN_SRC bash
-VIZ_FILE=relabeledSeqs.unchop.resorted.s5000.n2000.png
-RESORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
-
-odgi viz -i  $RESORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
-#+END_SRC
-
-
-** Method 2: Subsetting then pruning and sorting
-
-*** a. Select p lines
-Delete some of the paths get 100 seqs
+*** a. Select ~P~ lines
+Delete some of the paths get 99 sequences/samples
 
 #+BEGIN_SRC bash
 grep -n 'P' $SEQWISH_GRAPH | wc -l
@@ -89,6 +67,7 @@ grep -n 'P' $SEQWISH_GRAPH_SUBSET | wc -l
 #+END_SRC
 
 *** b. Induce an odgi graph from the subset then sort and prune the graph
+This way we will end up with a graph of only 99 samples
 
 #+BEGIN_SRC bash
 SUBSET_ODGI_GRAPH=${DATASET_DIR}/qc.subset.99.og
@@ -100,8 +79,6 @@ odgi build -p -t 16 -g $SEQWISH_GRAPH_SUBSET -o - | \
   odgi sort -Y -i - -o $SUBSET_PRUNED_SORTED_ODGI_GRAPH
 #+END_SRC
 
-*Note:* sort with -Y fails with: /[odgi viz] error: The graph is not optimized. Please run 'odgi sort' using -O, --optimize/
-
 
 *** c. Visualize the pruned and sorted graph
 
@@ -112,5 +89,32 @@ PRUNED_SUBSET_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
 odgi viz -i  $SUBSET_PRUNED_SORTED_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 1080
 #+END_SRC
 
-You get the figure below. [[../figures/relabeledSeqs_99_subset_pruned_sorted.png]]
+You get the figure [[fig:99-sample-msa]] below.
+#+CAPTION[RSV Capsid]: 99 sample MSA
+#+NAME: fig:99-sample-msa
+[[../figures/covid/relabeledSeqs_99_subset_pruned_sorted.png]]
 
+
+
+*** d. Inspect the Graph (GFA) to understand the unaligned sequences
+
+Generate a GFA
+
+#+BEGIN_SRC bash
+SUBSET_PRUNED_SORTED_GFA_GRAPH=${DATASET_DIR}/qc.subset_pruned_sorted.gfa
+
+odgi view -i $SUBSET_PRUNED_SORTED_ODGI_GRAPH -g > $SUBSET_PRUNED_SORTED_GFA_GRAPH
+#+END_SRC
+
+View it in bandage to see some bubbles and  such as the ones in figure [[fig:some-bubbles]]  below.
+#+CAPTION[RSV Capsid]: Some bubbles viewed in bandage
+#+NAME: fig:some-bubbles
+[[../figures/covid/some_bubbles.png]]
+
+Confirm that there are no Ns in the sample (was done through QC but good to verify).
+
+#+BEGIN_SRC bash
+grep 'N' $SUBSET_PRUNED_SORTED_GFA_GRAPH
+#+END_SRC
+
+Conclusion: there's something that's going on with the alignment or the data quality because the COViD genome is not known to have this much diversity.
