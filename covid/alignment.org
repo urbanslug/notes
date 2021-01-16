@@ -1,0 +1,109 @@
+* Fix alignment problems at the ends
+** 1. Generate an alignment
+#+BEGIN_SRC bash
+MAPPING=${DATASET_DIR}/map.qc.paf
+RAND_MAPPING=${DATASET_DIR}/rand.qc.paf
+ALIGNMENT=${DATASET_DIR}/aln.qc.paf
+
+edyeet -n 2000 -t 16 -p 95 -a 70 -n 1000 -s 5000 -i $RAND_MAPPING $FASTA $FASTA > $MAPPING
+awk 'rand() < 0.01' $MAPPING > $RAND_MAPPING
+edyeet -n 2000 -t 16 -p 95 -a 70 -n 1000 -s 5000  -t 16 -i $RAND_MAPPING  $FASTA $FASTA > $ALIGNMENT
+#+END_SRC
+
+** 2. Make sequence names unique
+#+BEGIN_SRC bash
+grep '>' $FASTA | wc -l
+
+sed -i 's/>\S*lugli-4zz18-/>/g' $FASTA
+
+grep '>' $FASTA | wc -l
+#+END_SRC
+
+** 3. Convert the alignment to (seqwish) GFA
+#+BEGIN_SRC bash
+SEQWISH_GRAPH=${DATASET_DIR}/qc.seqwish.gfa
+
+seqwish -p $ALIGNMENT -s $FASTA -t 16 -g $SEQWISH_GRAPH -k 19 -B 1000000 -P
+#+END_SRC
+
+** 4. Iduce odgi graph
+#+BEGIN_SRC bash
+SORTED_UNCHOPPED_ODGI_GFA_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.s5000.n2000.sorted.gfa
+
+odgi build -g $SEQWISH_GRAPH -o - | \
+  odgi unchop -i - -o - | \
+  odgi sort -i - -p s -o $SORTED_UNCHOPPED_ODGI_GRAPH
+#+END_SRC
+
+** 5. Visualize the graph
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs.unchop.sorted.s5000.n2000.png
+SORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/relabeledSeqs.unchop.sorted.s5000.n2000.png
+
+odgi viz -i  $SORTED_UNCHOPPED_ODGI_GRAPH -o $SORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+
+* Fix alignment problems in the middle
+** Method 1: sorting
+
+Seems to improve alignment in the middle
+
+*** a. Sort again using -Y
+
+/Takes a while/
+
+#+BEGIN_SRC bash
+RESORTED_UNCHOPPED_ODGI_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.resorted.og
+
+odgi sort -Y -i $SORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_GRAPH
+#+END_SRC
+
+*** b. Visualize the re-sorted graph
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs.unchop.resorted.s5000.n2000.png
+RESORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
+
+odgi viz -i  $RESORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+
+** Method 2: Subsetting then pruning and sorting
+
+*** a. Select p lines
+Delete some of the paths get 100 seqs
+
+#+BEGIN_SRC bash
+grep -n 'P' $SEQWISH_GRAPH | wc -l
+# Number of P lines is 17488
+
+SEQWISH_GRAPH_SUBSET=${DATASET_DIR}/qc.seqwish.100.gfa
+
+# DELETE P lines from the GFA down to only 99 of them
+sed '687234,704622d' $SEQWISH_GRAPH > $SEQWISH_GRAPH_SUBSET
+
+grep -n 'P' $SEQWISH_GRAPH_SUBSET | wc -l
+# Number of P lines is 99
+#+END_SRC
+
+*** b. Induce an odgi graph from the subset then sort and prune the graph
+
+#+BEGIN_SRC bash
+SUBSET_ODGI_GRAPH=${DATASET_DIR}/qc.subset.99.og
+SUBSET_PRUNED_SORTED_ODGI_GRAPH=${DATASET_DIR}/qc.subset_pruned_sorted.og
+
+odgi build -g $SEQWISH_GRAPH_SUBSET -o - | \
+  odgi sort -Y -O -i - -o - | \
+  odgi prune -c 1 -i - -o $SUBSET_PRUNED_SORTED_ODGI_GRAPH
+#+END_SRC
+
+*** c. Visualize the pruned and sorted graph
+
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs_subset_pruned_sorted.png
+PRUNED_SUBSET_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
+
+odgi viz -i  $PRUNED_SUBSET_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+Errors out with: /[odgi viz] error: The graph is not optimized. Please run 'odgi sort' using -O, --optimize/
