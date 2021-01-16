@@ -518,15 +518,6 @@ RESORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
 odgi viz -i  $RESORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
 #+END_SRC
 
-*** Local
-
-#+BEGIN_SRC bash
-REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc
-REMOTE_ODGI_VIZ=${REMOTE_DATASET_DIR}/${VIZ_FILE}
-
-rsync -azP  pingu:${REMOTE_ODGI_VIZ} $VIZ_FILE
-#+END_SRC
-
 **** 8. Select p lines
 Delete some of the paths get 100 seqs
 
@@ -566,3 +557,15 @@ odgi viz -i  $PRUNED_SUBSET_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 108
 
 *Errors out with /[odgi viz] error: The graph is not optimized. Please run 'odgi sort' using -O, --optimize/*
 
+
+*** Local
+
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs_subset_pruned_sorted.png
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc
+REMOTE_ODGI_VIZ=${REMOTE_DATASET_DIR}/${VIZ_FILE}
+LOCAL_FIGURE_DIR=${HOME}/src/org/bio-notes/figures
+FIGURE=${LOCAL_FIGURE_DIR}/${VIZ_FILE}
+
+rsync -azP  pingu:${REMOTE_ODGI_VIZ} $FIGURE
+#+END_SRC

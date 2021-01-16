@@ -99,7 +99,7 @@ odgi build -p -t 16 -g $SEQWISH_GRAPH_SUBSET -o - | \
   odgi sort -i - -o $SUBSET_PRUNED_SORTED_ODGI_GRAPH
 #+END_SRC
 
-Note: sort with -Y fails with: /[odgi viz] error: The graph is not optimized. Please run 'odgi sort' using -O, --optimize/
+*Note:* sort with -Y fails with: /[odgi viz] error: The graph is not optimized. Please run 'odgi sort' using -O, --optimize/
 
 
 *** c. Visualize the pruned and sorted graph
@@ -111,5 +111,5 @@ PRUNED_SUBSET_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
 odgi viz -i  $SUBSET_PRUNED_SORTED_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 1080
 #+END_SRC
 
-You get the figure [[../figures/relabeledSeqs_99_subset_pruned_sorted.png]].
+You get the figure below. [[../figures/relabeledSeqs_99_subset_pruned_sorted.png]]
 
