@@ -75,7 +75,7 @@ SUBSET_PRUNED_SORTED_ODGI_GRAPH=${DATASET_DIR}/qc.subset_pruned_sorted.og
 
 odgi build -p -t 16 -g $SEQWISH_GRAPH_SUBSET -o - | \
   odgi prune -c 1 -i - -o - | \
-  odgi sort -O -i - -o - |
+  odgi sort -O -i - -o - | \
   odgi sort -Y -i - -o $SUBSET_PRUNED_SORTED_ODGI_GRAPH
 #+END_SRC
 
@@ -89,13 +89,7 @@ PRUNED_SUBSET_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
 odgi viz -i  $SUBSET_PRUNED_SORTED_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 1080
 #+END_SRC
 
-You get the MSA figure below.
-
-#+CAPTION: 99 sample MSA
-#+NAME: fig:99-sample-msa
-[[../figures/covid/relabeledSeqs_99_subset_pruned_sorted.png]]
-
-
+You get the MSA figure below [[../figures/covid/relabeledSeqs_99_subset_pruned_sorted.png]].
 
 *** d. Inspect the Graph (GFA) to understand the unaligned sequences
 
@@ -107,11 +101,7 @@ SUBSET_PRUNED_SORTED_GFA_GRAPH=${DATASET_DIR}/qc.subset_pruned_sorted.gfa
 odgi view -i $SUBSET_PRUNED_SORTED_ODGI_GRAPH -g > $SUBSET_PRUNED_SORTED_GFA_GRAPH
 #+END_SRC
 
-View it in bandage to see some bubbles and  such as the ones below.
-
-#+CAPTION: Some bubbles viewed in bandage
-#+NAME: fig:some-bubbles
-[[../figures/covid/some_bubbles.png]]
+View it in bandage to see some bubbles and such as the ones below [[../figures/covid/some_bubbles.png]].
 
 Confirm that there are no Ns in the sample (was done through QC but good to verify).
 
@@ -120,3 +110,84 @@ grep 'N' $SUBSET_PRUNED_SORTED_GFA_GRAPH
 #+END_SRC
 
 Conclusion: there's something that's going on with the alignment or the data quality because the COViD genome is not known to have this much diversity.
+
+
+* Inspect the sequences themselves
+
+
+** Extract fasta from the GFA
+#+BEGIN_SRC bash
+SUBSET_PRUNED_SORTED_FASTA=${DATASET_DIR}/qc.subset_pruned_sorted.fasta
+
+odgi paths -i $SUBSET_PRUNED_SORTED_ODGI_GRAPH -f > $SUBSET_PRUNED_SORTED_FASTA
+#+END_SRC
+
+** Generate alignment with abpoa
+
+#+BEGIN_SRC bash
+CONSENSUS_SUBSET_FASTA=${DATASET_DIR}/qc.subset_pruned_sorted_consensus.fasta
+ALIGNMENT_PLOT=${DATASET_DIR}/qc.subset_pruned_sorted.pdf
+
+abpoa $SUBSET_PRUNED_SORTED_FASTA -g $ALIGNMENT_PLOT > $CONSENSUS_SUBSET_FASTA
+#+END_SRC
+
+Fails with OOM
+
+#+BEGIN_SRC bash
+... warnings elided...
+30078', graph 'ABPOA_graph' size too small for label
+Warning: node 'A
+30079', graph 'ABPOA_graph' size too small for label
+Warning: node 'G
+30080', graph 'ABPOA_graph' size too small for label
+Warning: node 'T
+30081', graph 'ABPOA_graph' size too small for label
+Warning: node 'G
+30082', graph 'ABPOA_graph' size too small for label
+Warning: node 'C
+30083', graph 'ABPOA_graph' size too small for label
+Warning: node 'T
+30084', graph 'ABPOA_graph' size too small for label
+Warning: node 'A
+30085', graph 'ABPOA_graph' size too small for label
+Warning: node 'T
+30086', graph 'ABPOA_graph' size too small for label
+Warning: node 'C
+30087', graph 'ABPOA_graph' size too small for label
+Warning: node 'C
+30088', graph 'ABPOA_graph' size too small for label
+Warning: node 'E
+30089', graph 'ABPOA_graph' size too small for label
+out of memory
+
+Segmentation fault
+[abpoa_dump_pog] Fail to plot abpoa DAG.
+#+END_SRC
+
+
+** Generate alignment with wfmash
+
+
+#+BEGIN_SRC bash
+WFMASH_ALIGNMENT=${DATASET_DIR}/aln.qc.wfmash.paf
+
+wfmash -s 5000 -p 90 -k 16 -n 10000 -X $SUBSET_PRUNED_SORTED_FASTA $SUBSET_PRUNED_SORTED_FASTA > $WFMASH_ALIGNMENT
+#+END_SRC
+
+#+BEGIN_SRC bash
+SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish.gfa
+
+seqwish -t 16 -k 20 -B 1000000 -p $WFMASH_ALIGNMENT -s $SUBSET_PRUNED_SORTED_FASTA -g $SEQWISH_WFMASH_GRAPH -P
+#+END_SRC
+
+#+BEGIN_SRC bash
+SEQWISH_WFMASH_VIZ=${DATASET_DIR}/qc_wfmash_seqwish.png
+
+odgi build -p -t 16 -g $SEQWISH_WFMASH_GRAPH -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -b -w 1 -x 1920 -y 1080 -i - -o $SEQWISH_WFMASH_VIZ
+#+END_SRC
+
+We get the alignment below [[../figures/covid/sewish_wfmash_99samples.jpeg]].

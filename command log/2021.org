@@ -2,7 +2,7 @@
 * Week 52
 ** Thu 31-12-2020
 Pruning
- 
+
 *** Core
 DISTANCE_MATRIX=${DATASET_DIR}/distance_matrix.${DATASET_ID}.tsv
 METADATA=${DATASET_DIR}/covmatrix.${DATASET_ID}.metadata.tsv
@@ -10,7 +10,7 @@ PRUNED_METADATA=${DATASET_DIR}/covmatrix.${DATASET_ID}.pruned.metadata.tsv
 NEIGHBORS=${DATASET_DIR}/neighbors.${DATASET_ID}.tsv
 
 python main.py prune $DISTANCE_MATRIX $METADATA $PRUNED_METADATA $NEIGHBORS
-   
+
 *** Locally
 **** 10
 DATASET_DIR=${HOME}/src/Work/UT/experiments/trees/covid/10
@@ -50,7 +50,7 @@ FILTER_UNKNOWNS=TRUE
 
 ***** 8k
 DATASET_ID=25k
-     
+
 DATASET_DIR=${HOME}/bioinfo/covid/data/trees/8k
 CONFIG_DIR=${HOME}/bioinfo/covid/config
 
@@ -114,10 +114,10 @@ I need a way to isolate only the metadata from a coverage matrix
 #+BEGIN_SRC
 def prune(distance_matrix)
   pruned = {}  # empty set
-  
+
   # Loop through the rows which are a list of distances
   for row_index, row in distance_matrix:
-  
+
      # if the row is marked as pruned skip it
      if row_index in pruned
         continue
@@ -125,13 +125,13 @@ def prune(distance_matrix)
      least = NULL
      # find the sample closest to it that's not marked as pruned
      for column_index, column in row:
-     
+
          # find the least that is not marked as pruned and is not itself
 
      pruned.add(null)
 #+END_SRC
 
-*** 
+***
 
 * Week 1
 ** Thu 07-01-21
@@ -147,7 +147,7 @@ using params
 
 This cut down samples to 17, 866 (still a good number)
 
-*** 
+***
 DATASET_DIR=${HOME}/bioinfo/covid/data
 
 FASTA=${DATASET_DIR}/30k/relabeledSeqs.sorted.fasta
@@ -162,7 +162,7 @@ DATASET_DIR=${HOME}/bioinfo/covid/data/qc
 FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
 ABPOA_GFA=${DATASET_DIR}/relabeledSeqs.sorted.qc.abpoa.gfa
 
-    
+
 abpoa $FASTA -r 3 -o $ABPOA_GFA
 
 Errors out
@@ -185,7 +185,7 @@ ln -s relabeledSeqs.sorted.qc.fasta.pggb-s1000-p90-n50-a0-K16-k19-w50000-j5000-e
 
 ** Sat 09-01-21
 *** Alignment with pggb
-   
+
 odgi
 
 * Week 2
@@ -200,7 +200,7 @@ Activate the virtualenv
 pyenv activate taxophages
 #+END_SRC
 
-     
+
 #+BEGIN_SRC bash
 DATASET_DIR=${HOME}/bioinfo/covid/data/trees/8k
 DATASET_ID=25k
@@ -269,8 +269,8 @@ PUBLIC_DIR=${HOME}/bioinfo/covid/public
 
 ln -sf $EXPORTED_JSON ${PUBLIC_DIR}/global.json
 #+END_SRC
-  
-    
+
+
 *** QC
 Run QC again but cut samples down to 17, 488 using:
  - n_count == 0
@@ -409,7 +409,7 @@ python main.py get-metadata $COVERAGE_MATRIX $COVERAGE_MATRIX_WITH_METADATA
 #+END_SRC
 
 ** Thu 14-01-21
-*** nextstrain 
+*** nextstrain
 #+BEGIN_SRC bash
 DATASET_ID=qc
 
@@ -575,7 +575,38 @@ Inspect the GFA
 
 #+BEGIN_SRC bash
 SUBSET_PRUNED_SORTED_GFA_GRAPH=${REMOTE_DATASET_DIR}/qc.subset_pruned_sorted.gfa
-LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data/ignore
 
 rsync -azP pingu:${SUBSET_PRUNED_SORTED_GFA_GRAPH} $LOCAL_DATA_DIR
+#+END_SRC
+
+* Week 3
+
+** Mon 18-01-21
+*** Local
+
+Fetch Fasta
+
+#+BEGIN_SRC bash
+REMOTE_SUBSET_PRUNED_SORTED_FASTA=${REMOTE_DATASET_DIR}/qc.subset_pruned_sorted.fasta
+
+rsync -azP pingu:${REMOTE_SUBSET_PRUNED_SORTED_FASTA} $LOCAL_DATA_DIR
+
+grep '>' $SUBSET_PRUNED_SORTED_FASTA | wc -l
+#+END_SRC
+
+Fetch GFA
+
+#+BEGIN_SRC bash
+SUBSET_PRUNED_SORTED_SEQWISH_WFMASH_GFA_GRAPH=${REMOTE_DATASET_DIR}/qc_wfmash_seqwish.gfa
+
+rsync -azP pingu:${SUBSET_PRUNED_SORTED_SEQWISH_WFMASH_GFA_GRAPH} $LOCAL_DATA_DIR
+#+END_SRC
+
+Fetch viz
+
+#+BEGIN_SRC bash
+REMOTE_SEQWISH_WFMASH_VIZ=${REMOTE_DATASET_DIR}/qc_wfmash_seqwish.png
+
+rsync -azP pingu:${REMOTE_SEQWISH_WFMASH_VIZ} $LOCAL_DATA_DIR
 #+END_SRC
