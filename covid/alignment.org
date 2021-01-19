@@ -164,9 +164,9 @@ Segmentation fault
 [abpoa_dump_pog] Fail to plot abpoa DAG.
 #+END_SRC
 
+* Fix alignment problems by using wfmash
 
 ** Generate alignment with wfmash
-
 
 #+BEGIN_SRC bash
 WFMASH_ALIGNMENT=${DATASET_DIR}/aln.qc.wfmash.paf
