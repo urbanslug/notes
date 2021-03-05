@@ -1,0 +1,189 @@
+#+TITLE: Alignment Command Line Stuff
+
+* vars
+#+BEGIN_SRC
+# Fasta
+FIRST=${DATASET_DIR}/yeast/first.fasta
+SECOND=${DATASET_DIR}/yeast/second.fasta
+
+LPA=${DATASET_DIR}/human/LPA.fa
+LPA_SUBSET=${DATASET_DIR}/human/LPA.subset.f
+LPA_TWO_SEQUENCES=${DATASET_DIR}/human/LPA.two_sequences.fa
+DRB1=${DATASET_DIR}/human/DRB1-3123.renamed.fa
+
+APPLE=${DATASET_DIR}/lastz/apple.fa
+APPLE_REV=${DATASET_DIR}/lastz/apple.reverse.fa
+APPLE_REV_MUTANT=${DATASET_DIR}/lastz/apple.reverse.mutant.fa
+
+ORANGE=${DATASET_DIR}/lastz/orange.fa
+
+LEMON=${DATASET_DIR}/lastz/lemon.fa
+LIME=${DATASET_DIR}/lastz/lime.fa
+
+# PAF alignments
+PAF_DRB1=${OUTPUT_DIR}/tmp/drb1.paf
+PAF_YEAST=${OUTPUT_DIR}/tmp/yeast.paf
+PAF_LPA=${OUTPUT_DIR}/tmp/lpa.paf
+PAF_LPA_SUBSET=${OUTPUT_DIR}/tmp/lpa_subset.paf
+
+# GFA graphs
+GFA_LPA=${OUTPUT_DIR}/tmp/lpa.gfa
+GFA_LPA_SUBSET=${OUTPUT_DIR}/tmp/lpa_subset.gfa
+GFA_DRB1=${OUTPUT_DIR}/tmp/drb1.gfa
+#+END_SRC
+
+Chaining
+
+#+BEGIN_SRC
+TARGET_FASTA=$LPA
+QUERY_FASTA=$LPA
+
+SAMPLE=lpa
+
+MASHZ_ALIGNMENT=${OUTPUT_DIR}/tmp/${SAMPLE}.mashz.paf
+WFMASH_ALIGNMENT=${OUTPUT_DIR}/tmp/${SAMPLE}.wfmash.paf
+SEQWISH_GFA=${OUTPUT_DIR}/tmp/${SAMPLE}.seqwish.gfa
+ODGI_GRAPH=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.og
+ODGI_GFA=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.gfa
+ODGI_VIZ=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.png
+#+END_SRC
+
+
+* Preparing input
+
+hsx
+#+BEGIN_SRC
+hsx apple.reverse.fa > apple.reverse.fa.hsx
+#+END_SRC
+
+fai
+#+BEGIN_SRC
+samtools faidx apple.reverse.fa -o apple.reverse.fa.fai
+#+END_SRC
+
+selecting sequences from fasta file
+#+BEGIN_SRC
+seqtk subseq file.fa <(printf %s\\n seq1 seq2) > file.selected.fa
+#+END_SRC
+
+* lastz-cpp
+#+BEGIN_SRC
+valgrind --leak-check=yes lastz-cpp
+#+END_SRC
+
+#+BEGIN_SRC
+lastz-cpp \
+ "${FIRST}.hsx/S288C.chrI[33693..137989]" \
+ "${SECOND}.hsx/DBVPG6765.chrI[20000..125000]"
+#+END_SRC
+
+* mashz
+#+BEGIN_SRC
+mashz $LPA_SUBSET $LPA_SUBSET -X > $PAF_LPA_SUBSET
+#+END_SRC
+
+#+BEGIN_SRC
+mashz $LPA_TWO_SEQUENCES $LPA_TWO_SEQUENCES -X -N -p 95 -s 100000 --lastz "--gfextend --chain --gapped" > x.paf
+
+mashz $LPA_TWO_SEQUENCES $LPA_TWO_SEQUENCES -X -N -p 95 -s 100000 --lastz "--gfextend --nochain --gapped" > x.paf
+mashz $LPA_TWO_SEQUENCES $LPA_TWO_SEQUENCES -X -N -p 95 -s 100000 --lastz "--gfextend --chain --gapped" > x.paf
+#+END_SRC
+
+#+BEGIN_SRC
+mashz $LPA $LPA -X -p 95 -t 16 > $PAF_LPA
+#+END_SRC
+
+#+BEGIN_SRC
+mashz $DRB1 $DRB1 -X -p 70 -s 1000 -n 10 -t 16 > $PAF_DRB1
+#+END_SRC
+
+#+BEGIN_SRC
+mashz $FIRST $SECOND > $PAF_YEAST
+#+END_SRC
+
+* Visualize PAF
+
+#+BEGIN_SRC
+paf2dotplot png large x.paf &&  gnuplot out.gp
+#+END_SRC
+
+* Chaining
+  
+#+BEGIN_SRC
+"--step=10 --seed=match12 --notransition --exact=20 --noytrim --match=1,5 --ambiguous=n  --filter=coverage:90 --filter=identity:95"
+"--filter=identity:95 --gfextend --chain --gapped"
+#+END_SRC
+
+** Command
+#+BEGIN_SRC
+# \
+# ------------------ mashz align --------------- \
+mashz $TARGET_FASTA $QUERY_FASTA -X -t 16 -s 50000 -n 10 -p 95 --lastz "--filter=identity:95 --gfextend --chain --gapped" > $MASHZ_ALIGNMENT \
+# \
+# ------------ induce variation graph ---------- \
+seqwish -s $TARGET_FASTA -p $MASHZ_ALIGNMENT -g $SEQWISH_GFA -t 16 -P -k 27 \
+# \
+# ----------------- odgi graph ------------------ \
+odgi build -g $SEQWISH_GFA -o $ODGI_GRAPH \
+odgi prune -c 1 -i  $ODGI_GRAPH -o - | \
+odgi sort -O -i - -o - | \
+odgi sort -Y -i - -o - | \
+odgi viz -b -i - -o $ODGI_VIZ -x 1920 -y 1080
+odgi sort -p Ygs -i $ODGI_GRAPH -o - | odgi viz -b -i - -o $ODGI_VIZ -x 1920 -y 1080 \
+odgi view  -i $ODGI_GRAPH -g > $ODGI_GFA
+# \
+# -------- generate plot from the alignment ----- \
+paf2dotplot png large $MASHZ_ALIGNMENT && gnuplot out.gp && open out.png
+# \
+#+END_SRC
+
+odgi prune -c 1 -i $ODGI_GRAPH -o - | \
+odgi sort -O -i - -o - | \
+odgi sort -Y -i - -o - | \
+odgi viz -b -i - -o $ODGI_VIZ -x 1920 -y 1080
+
+* wfmash
+#+BEGIN_SRC
+wfmash $LPA $LPA -X -p 95 -t 16 > $PAF_LPA
+#+END_SRC
+
+# -------- align ----- \
+wfmash $TARGET_FASTA $QUERY_FASTA -X -s 50000 -p 95 > $WFMASH_ALIGNMENT && \
+# -------- induce graph ----- \
+seqwish -s $TARGET_FASTA -p $WFMASH_ALIGNMENT -g $SEQWISH_GFA -t 16 -P -k 9 && \
+# -------- generate plot ----- \
+paf2dotplot png large $WFMASH_ALIGNMENT && \
+gnuplot out.gp && \
+open out.png
+
+* seqwish
+
+Induce a graph from GFA
+
+#+BEGIN_SRC
+seqwish -s $DRB1 -p $PAF_DRB1 -g $GFA_DRB1 -t 16 -P -k 9
+#+END_SRC
+
+#+BEGIN_SRC
+seqwish -s $LPA -p $PAF_LPA -g $GFA_LPA -t 16 -P -k 27
+#+END_SRC
+
+seqwish -s $LPA_SUBSET -p $PAF_LPA_SUBSET -g $GFA_LPA_SUBSET -t 16 -P -k 27
+
+* Smooth a graph
+
+#+BEGIN_SRC
+smoothxg -t 16 -g $SEQWISH_GFA -o $SMOOTHED_SEQWISH_GFA
+#+END_SRC
+
+* odgi
+
+Generate a visualization of the graph from the MSA
+
+#+BEGIN_SRC
+odgi build -p -t 16 -g $SMOOTHED_SEQWISH_WFMASH_GRAPH -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -x 1920 -y 1080 -i - -o $SEQWISH_WFMASH_VIZ
+#+END_SRC

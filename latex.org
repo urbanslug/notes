@@ -1,0 +1,10 @@
+#+TITLE: LaTeX
+* Tags                                                              :writing:
+
+Turn off latex hyphenation. Set high hyphenation penalty.
+Source: [[https://www.texfaq.org/FAQ-hyphoff][Stopping all hyphenation]]
+
+#+BEGIN_SRC tex
+\hyphenpenalty 10000
+\exhyphenpenalty 10000
+#+END_SRC

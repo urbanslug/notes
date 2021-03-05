@@ -1,0 +1,12 @@
+* Simulate file input
+http://mywiki.wooledge.org/ProcessSubstitution
+
+From a program
+#+BEGIN_SRC
+diff <(sort list1) <(sort list2)
+#+END_SRC
+
+Lines themselves
+#+BEGIN_SRC
+<( printf %s\\n line1 line2 )
+#+END_SRC

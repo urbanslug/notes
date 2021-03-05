@@ -1,0 +1,1192 @@
+#+STARTUP: overview
+* Week 52
+** Thu 31-12-2020
+Pruning
+
+*** Core
+DISTANCE_MATRIX=${DATASET_DIR}/distance_matrix.${DATASET_ID}.tsv
+METADATA=${DATASET_DIR}/covmatrix.${DATASET_ID}.metadata.tsv
+PRUNED_METADATA=${DATASET_DIR}/covmatrix.${DATASET_ID}.pruned.metadata.tsv
+NEIGHBORS=${DATASET_DIR}/neighbors.${DATASET_ID}.tsv
+
+python main.py prune $DISTANCE_MATRIX $METADATA $PRUNED_METADATA $NEIGHBORS
+
+*** Locally
+**** 10
+DATASET_DIR=${HOME}/src/Work/UT/experiments/trees/covid/10
+DATASET_ID=10
+
+*** Server
+**** 30k
+DATASET_DIR=${HOME}/bioinfo/covid/data/trees/30k
+DATASET_ID=25k
+
+**** 5k
+DATASET_DIR=${HOME}/bioinfo/covid/data/5k
+DATASET_ID=5k
+
+** Fri 01-01-2021
+*** Generate tree
+
+**** Core
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+./taxophages/viz/nextstrain.R \
+  $CSV $REDUCED_MATRIX $METADATA $NEWICK_TREE $DISTANCE_MATRIX $DIMENSIONS $FILTER_UNKNOWNS
+
+**** Server
+***** 30k
+DATASET_DIR=${HOME}/bioinfo/covid/data/trees/8k
+DATASET_ID=25k
+
+CSV=${DATASET_DIR}/covmatrix.${DATASET_ID}.pruned.metadata.tsv
+REDUCED_MATRIX=${DATASET_DIR}/reduced.${DATASET_ID}.pruned.tsv
+METADATA=${DATASET_DIR}/metadata.${DATASET_ID}.pruned.tsv
+NEWICK_TREE=${DATASET_DIR}/${DATASET_ID}.pruned.nwk
+DISTANCE_MATRIX=${DATASET_DIR}/distance_matrix.${DATASET_ID}.pruned.tsv
+
+DIMENSIONS=1000
+FILTER_UNKNOWNS=TRUE
+
+***** 8k
+DATASET_ID=25k
+
+DATASET_DIR=${HOME}/bioinfo/covid/data/trees/8k
+CONFIG_DIR=${HOME}/bioinfo/covid/config
+
+
+INPUT_TREE=${DATASET_DIR}/${DATASET_ID}.pruned.nwk
+NODE_DATA=${DATASET_DIR}/node_data.${DATASET_ID}.json
+REFINED_TREE=${DATASET_DIR}/refined.${DATASET_ID}.nwk
+METADATA=${DATASET_DIR}/metadata.${DATASET_ID}.pruned.tsv
+
+LAT_LONGS=${CONFIG_DIR}/lat_longs.tsv
+AUSPICE_CONFIG=${CONFIG_DIR}/auspice_config.json
+COLOR_DATA=${CONFIG_DIR}/colors.tsv
+
+EXPORTED_JSON=${DATASET_DIR}/covid.json
+
+PUBLIC_DIR=${HOME}/bioinfo/covid/public
+
+ln -s $EXPORTED_JSON ${PUBLIC_DIR}/global.json
+
+*** Extract fields
+**** Core
+python main.py extract-field -n region -n country $TSV $EXTRACTED_FIELDS
+
+**** Server
+DATASET_ID=25k
+DATASET_DIR=${HOME}/bioinfo/covid/data/trees/8k
+
+TSV=${DATASET_DIR}/covmatrix.${DATASET_ID}.pruned.metadata.tsv
+EXTRACTED_FIELDS=${DATASET_DIR}/extracted_fields.8k.tsv
+
+**** Locally
+DATASET_DIR=${HOME}/src/Work/UT/experiments/trees/covid/10
+DATASET_ID=10
+
+TSV=${DATASET_DIR}/covmatrix.${DATASET_ID}.metadata.tsv
+EXTRACTED_FIELDS=${DATASET_DIR}/extracted_fields..tsv
+
+**** Common
+
+*** Notes
+I need a way to isolate only the metadata from a coverage matrix
+
+** Sat 02-01-2021
+
+*** Pruned
+
+|                    1 |                   2 |                   3 |                    4 |                    5 |                    6 |                    7 |                    8 |                    9 |                   10 |
+|----------------------+---------------------+---------------------+----------------------+----------------------+----------------------+----------------------+----------------------+----------------------+----------------------|
+|                    0 | 0.00655256347156596 |  0.0028793519625453 | 0.000787674720180653 | 0.000282221617303291 | 0.000170293789428122 | 4.41234074645691e-05 | 0.000512260578232504 | 1.34515144989411e-05 | 2.69778431314371e-05 |
+|  0.00655256347156596 |                   0 | 0.00367321150902067 |  0.00576488875138531 |  0.00627034185426267 |  0.00638226968213784 |   0.0065084400641014 |  0.00604030289333346 |  0.00653911195706702 |   0.0065795413146974 |
+|   0.0028793519625453 | 0.00367321150902067 |                   0 |  0.00209167724236464 |    0.002597130345242 |  0.00270905817311717 |  0.00283522855508073 |  0.00236709138431279 |  0.00286590044804635 |  0.00290632980567673 |
+| 0.000787674720180653 | 0.00576488875138531 | 0.00209167724236464 |                    0 | 0.000505453102877362 | 0.000617380930752531 | 0.000743551312716084 | 0.000275414141948149 | 0.000774223205681712 |  0.00081465256331209 |
+| 0.000282221617303291 | 0.00627034185426267 |   0.002597130345242 | 0.000505453102877362 |                    0 | 0.000111927827875169 | 0.000238098209838722 | 0.000230038960929213 |  0.00026877010280435 | 0.000309199460434728 |
+| 0.000170293789428122 | 0.00638226968213784 | 0.00270905817311717 | 0.000617380930752531 | 0.000111927827875169 |                    0 | 0.000126170381963553 | 0.000341966788804382 | 0.000156842274929181 | 0.000197271632559559 |
+| 4.41234074645691e-05 |  0.0065084400641014 | 0.00283522855508073 | 0.000743551312716084 | 0.000238098209838722 | 0.000126170381963553 |                    0 | 0.000468137170767935 |  3.0671892965628e-05 | 7.11012505960062e-05 |
+| 0.000512260578232504 | 0.00604030289333346 | 0.00236709138431279 | 0.000275414141948149 | 0.000230038960929213 | 0.000341966788804382 | 0.000468137170767935 |                    0 | 0.000498809063733563 | 0.000539238421363941 |
+| 1.34515144989411e-05 | 0.00653911195706702 | 0.00286590044804635 | 0.000774223205681712 |  0.00026877010280435 | 0.000156842274929181 |  3.0671892965628e-05 | 0.000498809063733563 |                    0 | 4.04293576303782e-05 |
+| 2.69778431314371e-05 |  0.0065795413146974 | 0.00290632980567673 |  0.00081465256331209 | 0.000309199460434728 | 0.000197271632559559 | 7.11012505960062e-05 | 0.000539238421363941 | 4.04293576303782e-05 |                    0 |
+
+
+#+BEGIN_SRC
+def prune(distance_matrix)
+  pruned = {}  # empty set
+
+  # Loop through the rows which are a list of distances
+  for row_index, row in distance_matrix:
+
+     # if the row is marked as pruned skip it
+     if row_index in pruned
+        continue
+
+     least = NULL
+     # find the sample closest to it that's not marked as pruned
+     for column_index, column in row:
+
+         # find the least that is not marked as pruned and is not itself
+
+     pruned.add(null)
+#+END_SRC
+
+***
+
+* Week 1
+** Thu 07-01-21
+*** De duplication
+Removed duplicates using
+
+
+*** QC
+Ran QC
+using params
+ - N count  of 0
+ - sequence length of 29k or more
+
+This cut down samples to 17, 866 (still a good number)
+
+***
+DATASET_DIR=${HOME}/bioinfo/covid/data
+
+FASTA=${DATASET_DIR}/30k/relabeledSeqs.sorted.fasta
+TXT=${DATASET_DIR}/qc/names.qc.txt
+FILTERED_FASTA=${DATASET_DIR}/qc/relabeledSeqs.sorted.qc.fasta
+
+python main.py select-fasta $FASTA $TXT $FILTERED_FASTA
+
+
+*** alignment with abpoa
+DATASET_DIR=${HOME}/bioinfo/covid/data/qc
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+ABPOA_GFA=${DATASET_DIR}/relabeledSeqs.sorted.qc.abpoa.gfa
+
+
+abpoa $FASTA -r 3 -o $ABPOA_GFA
+
+Errors out
+abpoa $FASTA -r 3 -o $ABPOA_GFA
+[simd_abpoa_align_sequence_to_subgraph1] Error in cg_backtrack. (1)
+
+** Fri 08-01-21
+
+auspice
+
+
+smoothxg
+
+pggb -i $FASTA -N -w 50000 -s 1000 -I 0 -p 90 -a 70 -n 5 -t 16 -v -l -o $DATASET_DIR
+
+pggb -i $FASTA -N -w 50000 -s 1000 -I 0 -p 90 -a 0 -n 50 -t 16 -v -l -o $DATASET_DIR
+
+
+ln -s relabeledSeqs.sorted.qc.fasta.pggb-s1000-p90-n50-a0-K16-k19-w50000-j5000-e5000-I0-N.seqwish.gfa relabeledSeqs.sorted.qc.pggb.gfa
+
+** Sat 09-01-21
+*** Alignment with pggb
+
+odgi
+
+* Week 2
+** Sun 10-01-21
+*** Metadata fix
+Set the 1970 dates to "unknwon"
+
+**** taxophages
+
+Activate the virtualenv
+#+BEGIN_SRC bash
+pyenv activate taxophages
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+DATASET_DIR=${HOME}/bioinfo/covid/data/trees/8k
+DATASET_ID=25k
+
+CSV=${DATASET_DIR}/covmatrix.${DATASET_ID}.pruned.metadata.tsv
+REDUCED_MATRIX=${DATASET_DIR}/reduced.${DATASET_ID}.pruned.tsv
+METADATA=${DATASET_DIR}/metadata.${DATASET_ID}.pruned.tsv
+NEWICK_TREE=${DATASET_DIR}/${DATASET_ID}.pruned.nwk
+DISTANCE_MATRIX=${DATASET_DIR}/distance_matrix.${DATASET_ID}.pruned.tsv
+
+DIMENSIONS=1000
+FILTER_UNKNOWNS=TRUE
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+./taxophages/viz/nextstrain.R \
+  $CSV $REDUCED_MATRIX $METADATA $NEWICK_TREE $DISTANCE_MATRIX $DIMENSIONS $FILTER_UNKNOWNS
+#+END_SRC
+
+**** nextstrain
+
+#+BEGIN_SRC bash
+CONFIG_DIR=${HOME}/bioinfo/covid/config
+
+INPUT_TREE=${DATASET_DIR}/${DATASET_ID}.pruned.nwk
+NODE_DATA=${DATASET_DIR}/node_data.${DATASET_ID}.json
+REFINED_TREE=${DATASET_DIR}/refined.${DATASET_ID}.nwk
+METADATA=${DATASET_DIR}/metadata.${DATASET_ID}.pruned.tsv
+
+LAT_LONGS=${CONFIG_DIR}/lat_longs.tsv
+AUSPICE_CONFIG=${CONFIG_DIR}/auspice_config.json
+COLOR_DATA=${CONFIG_DIR}/colors.tsv
+
+EXPORTED_JSON=${DATASET_DIR}/covid.json
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+augur refine \
+  --keep-root \
+  --tree $INPUT_TREE \
+  --metadata $METADATA \
+  --output-node-data $NODE_DATA \
+  --output-tree $REFINED_TREE
+#+END_SRC
+
+#+BEGIN_SRC bash
+AUGUR_RECURSION_LIMIT=30000 \
+augur export v2 \
+  --tree $REFINED_TREE \
+  --metadata $METADATA \
+  --node-data $NODE_DATA \
+  --colors $COLOR_DATA \
+  --color-by-metadata region country location date \
+  --lat-longs $LAT_LONGS \
+  --geo-resolutions country \
+  --auspice-config $AUSPICE_CONFIG \
+  --output $EXPORTED_JSON
+#+END_SRC
+
+#+BEGIN_SRC bash
+PUBLIC_DIR=${HOME}/bioinfo/covid/public
+
+ln -sf $EXPORTED_JSON ${PUBLIC_DIR}/global.json
+#+END_SRC
+
+
+*** QC
+Run QC again but cut samples down to 17, 488 using:
+ - n_count == 0
+ - length > 29000
+ - date != "1970-01-01"
+
+**** Locally
+Set vars
+#+BEGIN_SRC bash
+DATASET_DIR=${HOME}/src/Work/UT/experiments/data/covid
+TSV=${DATASET_DIR}/stats.sorted.metadata.qc.25k.tsv
+TXT=${DATASET_DIR}/names.qc.txt
+#+END_SRC
+
+Extract the selected sequence names
+#+BEGIN_SRC bash
+python main.py extract-field -k False -n sequence_name $TSV $TXT
+#+END_SRC
+
+Copy sequence names to the server
+#+BEGIN_SRC bash
+rsync -azP $TXT pingu:~/bioinfo/covid/data/qc
+#+END_SRC
+
+**** Server
+Set vars
+#+BEGIN_SRC bash
+DATASET_DIR=${HOME}/bioinfo/covid/data
+
+FASTA=${DATASET_DIR}/30k/relabeledSeqs.sorted.fasta
+TXT=${DATASET_DIR}/qc/names.qc.txt
+FILTERED_FASTA=${DATASET_DIR}/qc/relabeledSeqs.sorted.qc.fasta
+#+END_SRC
+
+Filter the fasta file based on sequence names in the text file
+#+BEGIN_SRC bash
+python main.py select-fasta $FASTA $TXT $FILTERED_FASTA
+#+END_SRC
+
+Confirm the number of sequences in the fasta file
+#+BEGIN_SRC bash
+grep '>' $FILTERED_FASTA | wc -l
+17488
+#+END_SRC
+
+*** Alignment
+Generate an alignment from the samples
+
+#+BEGIN_SRC bash
+DATASET_DIR=${HOME}/bioinfo/covid/data/qc
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+#+END_SRC
+
+Use pggb for alignment
+
+#+BEGIN_SRC bash
+pggb -i $FASTA -N -w 50000 -s 1000 -I 0 -p 90 -a 70 -n 5 -t 16 -v -l -o $DATASET_DIR
+#+END_SRC
+
+
+*** Induce an odgi graph
+
+#+BEGIN_SRC bash
+PGGB_GRAPH=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta.pggb-s1000-p90-n5-a70-K16-k19-w50000-j5000-e5000-I0-N.seqwish.gfa
+ODGI_GRAPH=${DATASET_DIR}/relabeledSeqs.og
+UNCHOPPED_ODGI_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.og
+SORTED_UNCHOPPED_ODGI_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.sorted.og
+SORTED_UNCHOPPED_ODGI_GFA_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.sorted.gfa
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+  odgi build -g $PGGB_GRAPH -o $ODGI_GRAPH
+  odgi unchop -i $ODGI_GRAPH -o $UNCHOPPED_ODGI_GRAPH
+  odgi sort -i $UNCHOPPED_ODGI_GRAPH -p s -o $SORTED_UNCHOPPED_ODGI_GRAPH
+  odgi view -i $SORTED_UNCHOPPED_ODGI_GRAPH -g > $SORTED_UNCHOPPED_ODGI_GFA_GRAPH
+
+
+odgi build -g $PGGB_GRAPH -o - | \
+    odgi unchop -i - -o - | \
+    odgi sort -i - -p s -o $SORTED_UNCHOPPED_ODGI_GRAPH
+
+#+END_SRC
+
+#+BEGIN_SRC bash
+
+odgi build -g $PGGB_GRAPH -o - | \
+  odgi unchop -i - -o - | \
+  odgi sort -i - -p s -o $SORTED_UNCHOPPED_ODGI_GRAPH
+#+END_SRC
+
+** Wed 13-01-21
+*** Coverage vector
+
+#+BEGIN_SRC bash
+COVERAGE_MATRIX=${DATASET_DIR}/covmatrix.qc.tsv
+
+odgi paths -i $SORTED_UNCHOPPED_ODGI_GRAPH -H > $COVERAGE_MATRIX
+#+END_SRC
+
+*** Visualize
+
+#+BEGIN_SRC bash
+SORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/relabeledSeqs.unchop.sorted.png
+
+odgi viz -i  $SORTED_UNCHOPPED_ODGI_GRAPH -o $SORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+*** Local
+
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs.unchop.sorted.png
+
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc
+SORTED_UNCHOPPED_ODGI_VIZ=${REMOTE_DATASET_DIR}/${VIZ_FILE}
+
+rsync -azP  pingu:${SORTED_UNCHOPPED_ODGI_VIZ} $VIZ_FILE
+#+END_SRC
+
+*** Extract TSV
+
+Extract metadata
+#+BEGIN_SRC bash
+TSV=${HOME}/bioinfo/covid/data/30k/covmatrix.25k.metadata.tsv
+METADATA_TSV=${HOME}/bioinfo/covid/data/30k/metadata.25k.tsv
+
+
+python main.py extract-field -k False -n sequence_name $TSV $METADATA_TSV
+#+END_SRC
+
+source ~/.virtualenvs/taxophages/bin/activate
+#+BEGIN_SRC bash
+COVERAGE_MATRIX_WITH_METADATA=${DATASET_DIR}/covmatrix.metadata.qc.tsv
+
+python main.py get-metadata $COVERAGE_MATRIX $COVERAGE_MATRIX_WITH_METADATA
+#+END_SRC
+
+** Thu 14-01-21
+*** nextstrain
+#+BEGIN_SRC bash
+DATASET_ID=qc
+
+COVERAGE_MATRIX=${DATASET_DIR}/covmatrix.metadata.qc.tsv
+REDUCED_MATRIX=${DATASET_DIR}/reduced.${DATASET_ID}.tsv
+METADATA=${DATASET_DIR}/metadata.${DATASET_ID}.tsv
+NEWICK_TREE=${DATASET_DIR}/${DATASET_ID}.nwk
+DISTANCE_MATRIX=${DATASET_DIR}/distance_matrix.${DATASET_ID}.tsv
+
+DIMENSIONS=1000
+FILTER_UNKNOWNS=TRUE
+
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+./taxophages/viz/nextstrain.R \
+  $COVERAGE_MATRIX $REDUCED_MATRIX $METADATA $NEWICK_TREE $DISTANCE_MATRIX $DIMENSIONS $FILTER_UNKNOWNS
+#+END_SRC
+
+#+BEGIN_SRC bash
+PGGB_GRAPH=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta.pggb-s1000-p90-n100-a70-K16-k19-w50000-j5000-e5000-I0-N.seqwish.gfa
+SORTED_UNCHOPPED_ODGI_GFA_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.n100.sorted.gfa
+
+odgi build -g $PGGB_GRAPH -o - | \
+    odgi unchop -i - -o - | \
+    odgi sort -i - -p s -o $SORTED_UNCHOPPED_ODGI_GRAPH
+#+END_SRC
+
+basically, the default is to map in segments of 5kb, then merge the mappings that
+are consecutive in the target, then (I think, but not precise on details) filter to
+keep only the longest -s mappings for each region
+
+#+BEGIN_SRC bash
+DATASET_DIR=${HOME}/bioinfo/covid/data/qc
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+
+pggb -i $FASTA -w 50000 -s 5000 -I 0 -p 95 -a 70 -n 5 -t 16 -v -l -o $DATASET_DIR
+#+END_SRC
+
+**** 1. Generate the alignment
+#+BEGIN_SRC bash
+MAPPING=${DATASET_DIR}/map.qc.paf
+RAND_MAPPING=${DATASET_DIR}/rand.qc.paf
+ALIGNMENT=${DATASET_DIR}/aln.qc.paf
+
+edyeet -n 2000 -t 16 -p 95 -a 70 -n 1000 -s 5000 -i $RAND_MAPPING $FASTA $FASTA > $MAPPING
+awk 'rand() < 0.01' $MAPPING > $RAND_MAPPING
+edyeet -n 2000 -t 16 -p 95 -a 70 -n 1000 -s 5000  -t 16 -i $RAND_MAPPING  $FASTA $FASTA > $ALIGNMENT
+#+END_SRC
+
+**** 2. Make sequence names unique
+#+BEGIN_SRC bash
+grep '>' $FASTA | wc -l
+
+sed -i 's/>\S*lugli-4zz18-/>/g' $FASTA
+
+grep '>' $FASTA | wc -l
+#+END_SRC
+
+**** 3. Convert the alignment to GFA
+#+BEGIN_SRC bash
+SEQWISH_GRAPH=${DATASET_DIR}/qc.seqwish.gfa
+
+seqwish -p $ALIGNMENT -s $FASTA -t 16 -g $SEQWISH_GRAPH -k 19 -B 1000000 -P
+#+END_SRC
+
+**** 4. Iduce odgi graph
+#+BEGIN_SRC bash
+SORTED_UNCHOPPED_ODGI_GFA_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.s5000.n2000.sorted.gfa
+
+odgi build -g $SEQWISH_GRAPH -o - | \
+  odgi unchop -i - -o - | \
+  odgi sort -i - -p s -o $SORTED_UNCHOPPED_ODGI_GRAPH
+#+END_SRC
+
+**** 5. Visualize the graph
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs.unchop.sorted.s5000.n2000.png
+SORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/relabeledSeqs.unchop.sorted.s5000.n2000.png
+
+odgi viz -i  $SORTED_UNCHOPPED_ODGI_GRAPH -o $SORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+*** Local
+
+#+BEGIN_SRC bash
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc
+SORTED_UNCHOPPED_ODGI_VIZ=${REMOTE_DATASET_DIR}/${VIZ_FILE}
+
+rsync -azP  pingu:${SORTED_UNCHOPPED_ODGI_VIZ} $VIZ_FILE
+#+END_SRC
+
+** Sat 16-01-21
+
+**** 6. Sort again
+#+BEGIN_SRC bash
+RESORTED_UNCHOPPED_ODGI_GRAPH=${DATASET_DIR}/relabeledSeqs.unchop.resorted.og
+
+odgi sort -Y -i $SORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_GRAPH
+#+END_SRC
+
+**** 7. Visualize the re-sorted graph
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs.unchop.resorted.s5000.n2000.png
+RESORTED_UNCHOPPED_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
+
+odgi viz -i  $RESORTED_UNCHOPPED_ODGI_GRAPH -o $RESORTED_UNCHOPPED_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+**** 8. Select p lines
+Delete some of the paths get 100 seqs
+
+#+BEGIN_SRC bash
+grep -n 'P' $SEQWISH_GRAPH | wc -l
+# Number of P lines is 17488
+
+SEQWISH_GRAPH_SUBSET=${DATASET_DIR}/qc.seqwish.100.gfa
+
+# DELETE P lines from the GFA down to only 99 of them
+sed '687234,704622d' $SEQWISH_GRAPH > $SEQWISH_GRAPH_SUBSET
+
+grep -n 'P' $SEQWISH_GRAPH_SUBSET | wc -l
+# Number of P lines is 99
+#+END_SRC
+
+**** 9.Induce an odgi graph from the subset  Prune and sort the graph
+
+#+BEGIN_SRC bash
+SUBSET_ODGI_GRAPH=${DATASET_DIR}/qc.subset.99.og
+SUBSET_PRUNED_SORTED_ODGI_GRAPH=${DATASET_DIR}/qc.subset_pruned_sorted.og
+
+odgi build -g $SEQWISH_GRAPH_SUBSET -o - | \
+  odgi sort -Y -O -i - -o - | \
+  odgi prune -c 1 -i - -o $SUBSET_PRUNED_SORTED_ODGI_GRAPH
+#+END_SRC
+
+**** 11. Visualize the pruned and sorted graph
+
+
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs_subset_pruned_sorted.png
+PRUNED_SUBSET_ODGI_VIZ=${DATASET_DIR}/${VIZ_FILE}
+
+odgi viz -i  $PRUNED_SUBSET_ODGI_GRAPH -o $PRUNED_SUBSET_ODGI_VIZ -x 1920 -y 1080
+#+END_SRC
+
+*Errors out with /[odgi viz] error: The graph is not optimized. Please run 'odgi sort' using -O, --optimize/*
+
+
+*** Local
+
+Inspect visualization
+#+BEGIN_SRC bash
+VIZ_FILE=relabeledSeqs_subset_pruned_sorted.png
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc
+REMOTE_ODGI_VIZ=${REMOTE_DATASET_DIR}/${VIZ_FILE}
+LOCAL_FIGURE_DIR=${HOME}/src/org/bio-notes/figures
+FIGURE=${LOCAL_FIGURE_DIR}/${VIZ_FILE}
+
+rsync -azP  pingu:${REMOTE_ODGI_VIZ} $FIGURE
+#+END_SRC
+
+Inspect the GFA
+
+#+BEGIN_SRC bash
+SUBSET_PRUNED_SORTED_GFA_GRAPH=${REMOTE_DATASET_DIR}/qc.subset_pruned_sorted.gfa
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data/ignore
+
+rsync -azP pingu:${SUBSET_PRUNED_SORTED_GFA_GRAPH} $LOCAL_DATA_DIR
+#+END_SRC
+
+* Week 3
+
+** Mon 18-01-21
+*** Local
+
+Fetch Fasta
+
+#+BEGIN_SRC bash
+REMOTE_SUBSET_PRUNED_SORTED_FASTA=${REMOTE_DATASET_DIR}/qc.subset_pruned_sorted.fasta
+
+rsync -azP pingu:${REMOTE_SUBSET_PRUNED_SORTED_FASTA} $LOCAL_DATA_DIR
+
+grep '>' $SUBSET_PRUNED_SORTED_FASTA | wc -l
+#+END_SRC
+
+Fetch GFA
+
+#+BEGIN_SRC bash
+SUBSET_PRUNED_SORTED_SEQWISH_WFMASH_GFA_GRAPH=${REMOTE_DATASET_DIR}/qc_wfmash_seqwish.gfa
+
+rsync -azP pingu:${SUBSET_PRUNED_SORTED_SEQWISH_WFMASH_GFA_GRAPH} $LOCAL_DATA_DIR
+#+END_SRC
+
+Fetch viz
+
+#+BEGIN_SRC bash
+REMOTE_SEQWISH_WFMASH_VIZ=${REMOTE_DATASET_DIR}/qc_wfmash_seqwish.png
+
+rsync -azP pingu:${REMOTE_SEQWISH_WFMASH_VIZ} $LOCAL_DATA_DIR
+#+END_SRC
+
+
+** Tue 19-01-21
+*** Randomly select x number of sequences
+
+#+BEGIN_SRC bash
+SAMPLE_SIZE=5000
+#+END_SRC
+
+#+BEGIN_SRC bash
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+SAMPLED_FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.${SAMPLE_SIZE}sample.fasta
+
+python main.py sample-fasta -s $SAMPLE_SIZE $FASTA $SAMPLED_FASTA
+
+grep '>' $SAMPLED_FASTA | wc -l
+#+END_SRC
+
+*** Make names unique
+
+#+BEGIN_SRC bash
+sed -i 's/>\S*lugli-4zz18-/>/g' $SAMPLED_FASTA
+#+END_SRC
+
+*** alignment using wfmash
+
+#+BEGIN_SRC bash
+WFMASH_ALIGNMENT=${DATASET_DIR}/aln_qc_wfmash_${SAMPLE_SIZE}sample.paf
+
+wfmash -s 5000 -p 95 -k 16 -n 10000 -X $SAMPLED_FASTA $SAMPLED_FASTA > $WFMASH_ALIGNMENT
+#+END_SRC
+
+*** Induce vg compatible graph with seqwish
+#+BEGIN_SRC bash
+SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample.gfa
+
+seqwish -t 16 -k 20 -B 1000000 -p $WFMASH_ALIGNMENT -s $SAMPLED_FASTA -g $SEQWISH_WFMASH_GRAPH -P
+#+END_SRC
+
+*** Generate viz
+#+BEGIN_SRC bash
+SEQWISH_WFMASH_VIZ=${DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample.png
+#+END_SRC
+
+#+BEGIN_SRC bash
+odgi build -p -t 16 -g $SEQWISH_WFMASH_GRAPH -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -x 1920 -y 1080 -i - -o $SEQWISH_WFMASH_VIZ
+#+END_SRC
+
+make the bin width of the viz = 1bp
+
+#+BEGIN_SRC bash
+
+SEQWISH_WFMASH_VIZ=${DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample_b1.png
+
+odgi build -p -t 16 -g $SEQWISH_WFMASH_GRAPH -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -b -w 1 -x 1920 -y 1080 -i - -o $SEQWISH_WFMASH_VIZ
+#+END_SRC
+
+SAMPLE_SIZE=5000
+REMOTE_SEQWISH_WFMASH_VIZ=${REMOTE_DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample.png
+
+rsync -azP pingu:${REMOTE_SEQWISH_WFMASH_VIZ} $LOCAL_DATA_DIR
+
+*** Using mash
+SAMPLE_SIZE=5
+FASTA_FILENAME=qc.${SAMPLE_SIZE}sample.fasta
+SAMPLED_FASTA=${DATASET_DIR}/${FASTA_FILENAME}
+
+python main.py sample-fasta -s $SAMPLE_SIZE $FASTA $SAMPLED_FASTA
+
+DISTANCES=${DATASET_DIR}/distances.tsv
+NEWICK_TREE=${DATASET_DIR}/qc_${SAMPLE_SIZE}sample
+
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+python main.py mash-distance $FASTA $DISTANCES $NEWICK_TREE
+
+
+sed -i 's/>\S*lugli-4zz18-/>/g' $SAMPLED_FASTA
+grep '>' $SAMPLED_FASTA | wc -l
+
+REMOTE_TSV=${REMOTE_DATASET_DIR}/distances.tsv
+
+rsync -azP pingu:${REMOTE_TSV} $LOCAL_DATA_DIR
+
+DISTANCE_TSV_FILENAME=distances.tsv
+DISTANCE_TSV=${HOME}/src/org/bio-notes/data/ignore/${DISTANCE_TSV_FILENAME}
+
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc/
+REMOTE_TREE=${REMOTE_DATASET_DIR}/qc_${SAMPLE_SIZE}sample.pdf
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data/ignore
+
+rsync -azP pingu:${REMOTE_TREE} $LOCAL_DATA_DIR
+
+grep '>' $FASTA | wc -l
+
+** Wed 20-01-21
+
+*** Plot tree for 5k alignment
+
+Generate a coverage vector
+
+#+BEGIN_SRC bash
+COVERAGE_MATRIX=${DATASET_DIR}/covmatrix_wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.tsv
+
+odgi build -p -t 16 -g $SEQWISH_WFMASH_GRAPH -o - | \
+  odgi unchop -i - -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi paths -i - -H > $COVERAGE_MATRIX
+#+END_SRC
+
+#+BEGIN_SRC bash
+QC_FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+
+grep '>' $QC_FASTA | wc -l
+#+END_SRC
+
+Lengthen the path name and verify
+
+#+BEGIN_SRC bash
+sed -i 's/^/http:\/\/covid19.genenetwork.org\/resource\/lugli-4zz18-/g' $COVERAGE_MATRIX
+
+head -n 2 $COVERAGE_MATRIX | tail -1 | less
+#+END_SRC
+
+Fetch metadata
+#+BEGIN_SRC bash
+COVERAGE_MATRIX_WITH_METADATA=${DATASET_DIR}/covmatrix_metadata_wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.tsv
+
+python main.py get-metadata $COVERAGE_MATRIX $COVERAGE_MATRIX_WITH_METADATA
+#+END_SRC
+
+
+
+REDUCED_CSV=${DATASET_DIR}/rsvd_reduced_wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.tsv
+VIZ=${DATASET_DIR}/wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.pdf
+
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+python main.py clado-rsvd -d 1000 $COVERAGE_MATRIX_WITH_METADATA $REDUCED_CSV $VIZ
+
+SAMPLE_SIZE=5000
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc/
+REMOTE_TREE=${REMOTE_DATASET_DIR}/wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.html
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data/ignore
+
+rsync -azP pingu:${REMOTE_TREE} $LOCAL_DATA_DIR
+
+*** Comparison
+
+Select random sample
+
+#+BEGIN_SRC bash
+SAMPLE_SIZE=100
+#+END_SRC
+
+#+BEGIN_SRC bash
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+SAMPLED_FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.${SAMPLE_SIZE}sample.fasta
+
+python main.py sample-fasta -s $SAMPLE_SIZE $FASTA $SAMPLED_FASTA
+
+grep '>' $SAMPLED_FASTA | wc -l
+#+END_SRC
+
+
+**** mash
+
+FASTA=$SAMPLED_FASTA
+DISTANCES=${DATASET_DIR}/distances_${SAMPLE_SIZE}.tsv
+NEWICK_TREE=${DATASET_DIR}/qc_${SAMPLE_SIZE}sample
+
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+python main.py mash-distance $FASTA $DISTANCES $NEWICK_TREE
+
+
+**** wfmash
+WFMASH_ALIGNMENT=${DATASET_DIR}/wfmash_${SAMPLE_SIZE}sample.paf
+SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample.gfa
+COVERAGE_MATRIX=${DATASET_DIR}/covmatrix_wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.tsv
+
+
+# wfmash
+wfmash -s 5000 -p 95 -k 16 -n 10000 -X $FASTA $FASTA > $WFMASH_ALIGNMENT
+
+# seqwish
+seqwish -t 16 -k 20 -B 1000000 -p $WFMASH_ALIGNMENT -s $SAMPLED_FASTA -g $SEQWISH_WFMASH_GRAPH -P
+
+# odgi
+odgi build -p -t 16 -g $SEQWISH_WFMASH_GRAPH -o - | \
+  odgi unchop -i - -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi paths -i - -H > $COVERAGE_MATRIX
+
+sed -i '2,101s/^/http:\/\/covid19.genenetwork.org\/resource\/lugli-4zz18-/g' $COVERAGE_MATRIX
+
+
+COVERAGE_MATRIX_WITH_METADATA=${DATASET_DIR}/covmatrix_metadata_wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.tsv
+python main.py get-metadata $COVERAGE_MATRIX $COVERAGE_MATRIX_WITH_METADATA
+
+REDUCED_CSV=${DATASET_DIR}/rsvd_reduced_wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.tsv
+VIZ=${DATASET_DIR}/wfmash_unchop_prune_sort_${SAMPLE_SIZE}sample.pdf
+
+TAXOPHAGES_ENV=server \
+R_PACKAGES=${HOME}/RLibraries \
+python main.py clado-rsvd -d 10 $COVERAGE_MATRIX_WITH_METADATA $REDUCED_CSV $VIZ
+
+*** Local
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc/
+REMOTE_TREE=${REMOTE_DATASET_DIR}/wfmash_unchop_prune_sort_100sample.pdf
+REMOTE_TREE=${REMOTE_DATASET_DIR}/qc_100sample.pdf
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data/ignore
+
+rsync -azP pingu:${REMOTE_TREE} $LOCAL_DATA_DIR
+
+
+grep '>' $FASTA | wc -l
+
+
+
+
+
+*** Go back to 500 samples thing
+
+SAMPLE_SIZE=500
+
+
+
+# wfmash
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.${SAMPLE_SIZE}sample.fasta
+WFMASH_ALIGNMENT=${DATASET_DIR}/wfmash_${SAMPLE_SIZE}sample.paf
+
+wfmash -s 5000 -p 95 -k 16 -n 10000 -X $FASTA $FASTA > $WFMASH_ALIGNMENT
+
+# seqwish
+SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample.gfa
+
+seqwish -t 16 -k 16 -B 1000000 -p $WFMASH_ALIGNMENT -s $FASTA -g $SEQWISH_WFMASH_GRAPH -P 
+
+# smoothxg
+SMOOTHED_SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish_smoothed_${SAMPLE_SIZE}sample.gfa
+smoothxg -t 16 -g $SEQWISH_WFMASH_GRAPH -o $SMOOTHED_SEQWISH_WFMASH_GRAPH
+
+# odgi
+SEQWISH_WFMASH_VIZ=${DATASET_DIR}/wfmash_seqwish_smoothed_${SAMPLE_SIZE}sample.png
+
+odgi build -p -t 16 -g $SMOOTHED_SEQWISH_WFMASH_GRAPH -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -x 1920 -y 1080 -i - -o $SEQWISH_WFMASH_VIZ
+
+ REMOTE_TREE=${REMOTE_DATASET_DIR}/wfmash_seqwish_smoothed_${SAMPLE_SIZE}sample.png
+
+SAMPLE_SIZE=17488
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.fasta
+WFMASH_ALIGNMENT=${DATASET_DIR}/wfmash_${SAMPLE_SIZE}sample.paf
+SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish_${SAMPLE_SIZE}sample.gfa
+SMOOTHED_SEQWISH_WFMASH_GRAPH=${DATASET_DIR}/qc_wfmash_seqwish_smoothed_${SAMPLE_SIZE}sample.gfa
+SEQWISH_WFMASH_VIZ=${DATASET_DIR}/wfmash_seqwish_smoothed_${SAMPLE_SIZE}sample.png
+
+wfmash -s 5000 -p 95 -k 16 -n 10000 -X $FASTA $FASTA > $WFMASH_ALIGNMENT && \
+seqwish -t 16 -k 16 -B 1000000 -p $WFMASH_ALIGNMENT -s $FASTA -g $SEQWISH_WFMASH_GRAPH -P && \
+smoothxg -t 16 -g $SEQWISH_WFMASH_GRAPH -o $SMOOTHED_SEQWISH_WFMASH_GRAPH && \
+odgi build -p -t 16 -g $SMOOTHED_SEQWISH_WFMASH_GRAPH -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -x 1920 -y 1080 -i - -o $SEQWISH_WFMASH_VIZ
+
+SAMPLE_SIZE=17488
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc/
+REMOTE_TREE=${REMOTE_DATASET_DIR}/wfmash_seqwish_smoothed_${SAMPLE_SIZE}sample.png
+
+rsync -azP pingu:${REMOTE_TREE} $LOCAL_DATA_DIR
+
+** Fri 22-01-21
+   
+SAMPLE_SIZE=100
+FASTA=${DATASET_DIR}/relabeledSeqs.sorted.qc.${SAMPLE_SIZE}sample.fasta
+PGGB_OUT=${DATASET_DIR}/pggb/${SAMPLE_SIZE}
+
+pggb -i $FASTA --wfmash -s 5000 -p 95 -K 16 -k 16 -n 10000 -v -L -o $PGGB_OUT
+
+* Week 4
+
+** Mon 25-01-21
+*** Local
+
+SAMPLE_SIZE=100
+LOCAL_DATA_DIR=${HOME}/src/org/bio-notes/data/ignore
+
+REMOTE_DATASET_DIR=/home/njagi/bioinfo/covid/data/qc/pggb/${SAMPLE_SIZE}
+
+VIZ=relabeledSeqs.sorted.qc.100sample.fasta.pggb-W-s5000-l15000-p95-n10000-a0-K19-k19-w10000-j5000-e5000-I0-R0.smooth.og.viz_mqc.png
+REMOTE_VIZ=${REMOTE_DATASET_DIR}/${VIZ}
+
+pggb -t 16 -i $FASTA --wfmash -s 5000 -p 95 -K 19 -n 10000 -v -L -o $PGGB_OUT 
+
+rsync -azP pingu:${REMOTE_VIZ} $LOCAL_DATA_DIR
+
+
+Workflow
+
+1. Align
+
+pggb -i $FASTA --wfmash -s 5000 -p 95 -K 19 -n 10000 -v -L -o $PGGB_OUT 
+
+2. Coverage vector
+
+ODGI_GRAPH=${PGGB_OUT}/relabeledSeqs.sorted.qc.100sample.fasta.pggb-W-s5000-l15000-p95-n10000-a0-K19-k19-w10000-j5000-e5000-I0-R0.smooth.og
+COVERAGE_MATRIX=${PGGB_OUT}/coverage.tsv
+
+.smooth.og
+   
+odgi paths -t 16 -H -i $ODGI_GRAPH | awk '!/^Consensus/' FILE > $COVERAGE_MATRIX
+
+
+
+3. Get metadata
+
+4. Tree
+
+cwltool --no-container align.cwl clado-job.yml
+cwltool --no-container coverage.cwl clado-job.yml
+cwltool --no-container awk-coverage.cwl clado-job.yml
+cwltool --no-container metadata.cwl clado-job.yml
+
+R_PACKAGES="${HOME}/RLibraries" \
+TAXOPHAGES_ENV=server \
+cwltool --preserve-entire-environment --no-container newick.cwl clado-job.yml
+
+AUGUR_RECURSION_LIMIT=30000 \
+cwltool --preserve-entire-environment --no-container augur.cwl clado-job.yml
+
+R_PACKAGES="${HOME}/RLibraries" \
+TAXOPHAGES_ENV=server \
+AUGUR_RECURSION_LIMIT=30000 \
+cwltool --preserve-entire-environment --no-container phylogeny.cwl clado-job.yml
+
+* Week 5
+** Fri 05-02-21
+*** Vars
+**** Local
+#+BEGIN_SRC 
+DATASET_DIR=${HOME}/src/Work/UT/experiments/data/yeast
+OUTPUT_DIR=${HOME}/src/Work/UT/experiments/output/alignments
+FIGURE_DIR=${HOME}/src/Work/UT/experiments/figures/yeast
+
+REMOTE_HOME=/home/njagi
+REMOTE_ALIGNMENT_DIR=${REMOTE_HOME}/bioinfo/alignment
+
+FORMAT=paf
+
+ALIGNMENT=${OUTPUT_DIR}/aln.paf
+REV_ALIGNMENT=${OUTPUT_DIR}/aln_rev.paf
+#+END_SRC
+
+**** Server
+#+BEGIN_SRC
+DATASET_DIR=${HOME}/bioinfo/alignment
+
+SEQWISH_GFA=${DATASET_DIR}/aln.gfa
+REV_SEQWISH_GFA=${DATASET_DIR}/aln_rev.gfa
+
+ODGI_VIZ=aln.png
+#+END_SRC
+
+**** Agnostic
+#+BEGIN_SRC
+FIRST=${DATASET_DIR}/first_100bp.fasta
+SECOND=${DATASET_DIR}/second_100bp.fasta
+REV_SECOND=${DATASET_DIR}/second_rev_100bp.fasta
+
+FIRST_2=${DATASET_DIR}/first_2_100bp.fasta
+REV_SECOND_2=${DATASET_DIR}/second_rev_2_100bp.fasta
+
+CONCAT_FASTA=${DATASET_DIR}/concat_100bp.fasta
+REV_CONCAT_FASTA=${DATASET_DIR}/concat_rev_100bp.fasta
+
+ALIGNMENT=${DATASET_DIR}/aln_100bp.paf
+REV_ALIGNMENT=${DATASET_DIR}/aln_rev_100bp.paf
+#+END_SRC
+
+#+BEGIN_SRC
+FIRST=${DATASET_DIR}/first.fasta
+SECOND=${DATASET_DIR}/second.fasta
+REV_SECOND=${DATASET_DIR}/second_rev.fasta
+
+CONCAT_FASTA=${DATASET_DIR}/concat.fasta
+REV_CONCAT_FASTA=${DATASET_DIR}/concat_rev.fasta
+
+ALIGNMENT=${DATASET_DIR}/aln.paf
+REV_ALIGNMENT=${DATASET_DIR}/aln_rev.paf
+#+END_SRC
+
+*** Commands
+**** Local
+#+BEGIN_SRC 
+cat $FIRST $SECOND > $CONCAT_FASTA
+cat $FIRST $REV_SECOND > $REV_CONCAT_FASTA
+#+END_SRC
+
+Align lastz
+#+BEGIN_SRC 
+lastz $FIRST $SECOND --format=paf > $ALIGNMENT
+
+lastz --identity=99 $FIRST $SECOND --format=paf > $ALIGNMENT
+
+lastz $FIRST $REV_SECOND --format=paf > $REV_ALIGNMENT
+#+END_SRC
+
+Bring the GFA to local
+#+BEGIN_SRC
+rsync -azP pingu:${REMOTE_ALIGNMENT_DIR}/*.gfa .
+#+END_SRC
+
+
+Copy to server
+#+BEGIN_SRC 
+rsync -azP $CONCAT_FASTA $REV_CONCAT_FASTA $REV_ALIGNMENT $ALIGNMENT pingu:${REMOTE_ALIGNMENT_DIR}
+#+END_SRC
+**** Server
+Induce VG
+#+BEGIN_SRC
+seqwish -s $CONCAT_FASTA -p $ALIGNMENT > $SEQWISH_GFA
+
+seqwish -s $REV_CONCAT_FASTA -p $REV_ALIGNMENT > $REV_SEQWISH_GFA
+#+END_SRC
+
+
+wfmash align
+#+BEGIN_SRC
+wfmash -p 99 -X concat.fasta concat.fasta | less
+#+END_SRC
+
+#+BEGIN_SRC
+odgi build -p -t 16 -g $SEQWISH_GFA -o - | \
+  odgi prune -c 1 -i - -o - | \
+  odgi sort -O -i - -o - | \
+  odgi sort -Y -i - -o - | \
+  odgi viz -x 1920 -y 1080 -i - -o $ODGI_VIZ
+#+END_SRC
+
+* Week 6
+** Thu 11-02-21
+
+Compiling mashmap
+#+BEGIN_SRC
+brew install gsl
+./configure --prefix=/Users/urbanslug/src/Work/UT/MashMap/build --with-gsl=/usr/local/opt/gsl --enable-static-gsl
+make && make install
+#+END_SRC
+
+Comparing lastz with minimap2 as well as looking at Flavia's alignment
+#+BEGIN_SRC
+lastz $CHR11 $CHR17 --format=paf:wfmash \
+  --gfextend --nochain --gapped
+
+lastz $CHR11 $CHR17 --format=paf:wfmash \
+  --gapped
+minimap2 $CHR11 $CHR17
+
+minimap2 -c -X $CHR11 $CHR17 > alignment.paf
+
+lastz $APPLE $ORANGE --format=paf:wfmash
+minimap2 -c $APPLE $ORANGE 
+
+minimap2 ref.fa query.fq > approx-mapping.paf
+#+END_SRC
+
+** Fri 12-02-21
+Run wfmash from docker
+
+#+BEGIN_SRC
+docker run -it --rm --name wfmash wfmash:latest wfmash -h
+#+END_SRC
+
+docker run -it --rm --name wfmash wfmash:latest sh
+
+Add lastz as a submodule
+git submodule add git@github.com:lastz/lastz.git src/common/lastz/
+
+* Week 7
+** Sun 14-02-21
+
+#+BEGIN_SRC
+cmake  -DCMAKE_C_COMPILER='gcc-10' -DCMAKE_CXX_COMPILER='g++-10;-std=c++17' -H. -Bbuild && cmake --build build -- -j 16
+
+cmake  -DCMAKE_C_COMPILER='clang' -DCMAKE_CXX_COMPILER='clang' -H. -Bbuild && cmake --build build -- -j 16
+#+END_SRC
+
+** Mon 15-02-21
+
+#+BEGIN_SRC
+DATASET_DIR=/Users/urbanslug/src/Work/UT/experiments/data
+OUTPUT_DIR=/Users/urbanslug/src/Work/UT/experiments/output/alignments
+
+APPLE=${DATASET_DIR}/lastz/apple.fa
+ORANGE=${DATASET_DIR}/lastz/orange.fa
+
+CHR11=${DATASET_DIR}/human/chr11.fa
+CHR17=${DATASET_DIR}/human/chr17.fa
+
+CHR13=${HOME}/src/Work/UT/mashz/data/chm13#chr20_36805939-36807738.fa
+LPA=${HOME}/src/Work/UT/mashz/data/LPA.subset.fa
+
+mashmap -r $LPA -q $CHR13
+
+mashmap -r $APPLE -q $ORANGE
+
+mashmap -r $CHR11 -q $CHR17
+
+
+CC=clang CXX=clang cmake -H. -Bbuild && cmake --build build -- -j 3
+#+END_SRC
+
+** Tue 16-02-21
+
+#+BEGIN_SRC
+CC=clang CXX=clang cmake -H. -Bbuild && cmake --build build -- -j 3
+
+#+END_SRC
+
+#+BEGIN_SRC
+rsync -azP mashz bio:~/src
+#+END_SRC
+
+
+Only with lastz does cmake talk about building C objects e.g
+
+#+BEGIN_SRC
+Building CXX object src/common/wflign/deps/WFA/CMakeFiles/wfa.dir/WFA/gap_affine/affine_wavefront_display.cpp.o
+Building C object src/common/lastz/CMakeFiles/lastz.dir/src/infer_scores.c.o
+#+END_SRC
+
+Gives the same error even when included with `extern`
+
+#+BEGIN_SRC
+extern "C" {
+#include "common/lastz/src/lastz.h"
+}
+#+END_SRC
+
+Error is consistent
+
+#+BEGIN_SRC
+[ 98%] Building CXX object CMakeFiles/wfmash.dir/src/yeet/yeet_main.cpp.o
+In file included from /home/njagi/src/mashz/src/common/lastz/src/lastz.h:12,
+                 from /home/njagi/src/mashz/src/align/include/computeAlignments.hpp:33,
+                 from /home/njagi/src/mashz/src/yeet/yeet_main.cpp:22:
+/home/njagi/src/mashz/src/common/lastz/src/dna_utilities.h:296:36: error: expected ‘,’ or ‘...’ before ‘template’
+  296 | scoreset* new_dna_score_set (score template[4][4], score xScore, score fillScore, score gapOpen, score gapExtend);
+      |                                    ^~~~~~~~
+In file included from /home/njagi/src/mashz/src/common/lastz/src/pos_table.h:14,
+                 from /home/njagi/src/mashz/src/common/lastz/src/lastz.h:14,
+                 from /home/njagi/src/mashz/src/align/include/computeAlignments.hpp:33,
+                 from /home/njagi/src/mashz/src/yeet/yeet_main.cpp:22:
+/home/njagi/src/mashz/src/common/lastz/src/sequences.h:274:2: error: reference to ‘partition’ is ambiguous
+  274 |  partition* p;    // (H) an array, indexed by 0..len, of the
+      |  ^~~~~~~~~
+...
+#+END_SRC
+
+
+In my case cmake does put the .o in the src directory
+
+git clone --branch compilation https://github.com/urbanslug/mashz

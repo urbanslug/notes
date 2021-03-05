@@ -1,0 +1,21 @@
+#+STARTUP: overview
+
+#+BEGIN_SRC bash
+DATASET_DIR=${HOME}/bioinfo/covid/data/qc
+
+FASTA=${DATASET_DIR}/qc.subset_pruned_sorted.fasta
+REFERENCE_PATH=${DATASET_DIR}/mash_reference_99samples
+
+mash sketch -p 16 -i -o $REFERENCE_PATH $FASTA
+
+grep '>' $FASTA | wc -l
+#+END_SRC
+
+#+BEGIN_SRC bash
+MASH_REFERENCE=${DATASET_DIR}/mash_reference_99samples.msh
+DISTANCES=${DATASET_DIR}/distances.tsv
+
+mash dist -i $MASH_REFERENCE $FASTA > $DISTANCES
+#+END_SRC
+
+python main.py mash-distance $FASTA $DISTANCES
