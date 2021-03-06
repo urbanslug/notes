@@ -46,6 +46,7 @@ SEQWISH_GFA=${OUTPUT_DIR}/tmp/${SAMPLE}.seqwish.gfa
 ODGI_GRAPH=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.og
 ODGI_GFA=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.gfa
 ODGI_VIZ=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.png
+ODGI_STATS=${OUTPUT_DIR}/tmp/${SAMPLE}.odgi.stats.txt
 #+END_SRC
 
 
@@ -118,29 +119,22 @@ paf2dotplot png large x.paf &&  gnuplot out.gp
 #+BEGIN_SRC
 # \
 # ------------------ mashz align --------------- \
-mashz $TARGET_FASTA $QUERY_FASTA -X -t 16 -s 50000 -n 10 -p 95 --lastz "--filter=identity:95 --gfextend --chain --gapped" > $MASHZ_ALIGNMENT \
+mashz $TARGET_FASTA $QUERY_FASTA -X -t 16 -s 50000 -n 10 -p 95 --lastz "--gfextend --chain --gapped" > $MASHZ_ALIGNMENT \
 # \
 # ------------ induce variation graph ---------- \
 seqwish -s $TARGET_FASTA -p $MASHZ_ALIGNMENT -g $SEQWISH_GFA -t 16 -P -k 27 \
 # \
 # ----------------- odgi graph ------------------ \
-odgi build -g $SEQWISH_GFA -o $ODGI_GRAPH \
-odgi prune -c 1 -i  $ODGI_GRAPH -o - | \
-odgi sort -O -i - -o - | \
-odgi sort -Y -i - -o - | \
-odgi viz -b -i - -o $ODGI_VIZ -x 1920 -y 1080
-odgi sort -p Ygs -i $ODGI_GRAPH -o - | odgi viz -b -i - -o $ODGI_VIZ -x 1920 -y 1080 \
-odgi view  -i $ODGI_GRAPH -g > $ODGI_GFA
+odgi build -g $SEQWISH_GFA -o $ODGI_GRAPH && \
+odgi sort -p Ygs -i $ODGI_GRAPH -o - | \
+odgi viz  -x 1920 -y 1080 -b -i - -o $ODGI_VIZ && \
+odgi stats -i $ODGI_GRAPH -S > $ODGI_STATS && \
+odgi view -i $ODGI_GRAPH -g > $ODGI_GFA \
 # \
 # -------- generate plot from the alignment ----- \
 paf2dotplot png large $MASHZ_ALIGNMENT && gnuplot out.gp && open out.png
 # \
 #+END_SRC
-
-odgi prune -c 1 -i $ODGI_GRAPH -o - | \
-odgi sort -O -i - -o - | \
-odgi sort -Y -i - -o - | \
-odgi viz -b -i - -o $ODGI_VIZ -x 1920 -y 1080
 
 * wfmash
 #+BEGIN_SRC
