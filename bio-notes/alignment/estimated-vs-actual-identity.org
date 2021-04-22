@@ -1,0 +1,90 @@
+#+TITLE: Comparing Estimated vs Actual Indentity
+
+
+The aim is to compare actual (Smith Waterman) identity against estimated identity from mashmap with spaced seeds and mashmap without spaced seeds.
+Currently only doing it for spaced seeds.
+Mainly focused on what I could get from lower identity sequences, below 85% but I wanted to see what I could get in the 75% range.
+
+
+Data
+The LPA despite having a lot of sequences align are in the over 90% identity.
+In the end I focused on the chr11 and chr17 human and mouse because it's more familiar.
+I haven't yet tried with the yeast
+
+Tools:
+For the estimated identity I am using my mashmap fork (https://github.com/urbanslug/MashMap) which is the same one in mashz.
+I find it easier to work with the smaller codebase.
+
+I was going to use wflign for the actual identity and compare with mashmap with spaced seeds for estimated identity but the PAF doesn't contain an identity value.
+I also looked at Smith-Waterman-Gotoh (https://github.com/ekg/smithwaterman) but finding the correct alignment params made me look for an alternative.
+In the end I went with lastz because it sets params for the alignment and it was possible to customize the output to have the data I needed.
+
+I tried with different params both for lastz and mashmap and this is what I found to go the lowest.
+
+mashmap
+
+ - spaced seed params
+   * seed_weight    10
+   * seed_count     5
+   * similarity     0.75
+   * region_length  20
+
+ - window size         20
+ - percentage identity 70%
+
+mashmap requires minimum nucleotide identity of 70
+I want the window size to be the same length as the region length
+
+#+BEGIN_SRC
+mashmap -r $CHR_17 -q $CHR_11  --pi 70 -o x.mashmap.out
+#+END_SRC
+
+alignment output:
+
+#+BEGIN_SRC
+11 12087 0 4999 + 17 5955 467 5466 70.7393
+11 12087 5000 9999 - 17 5955 467 5466 72.6151
+11 12087 7087 12086 + 17 5955 467 5466 74.9461
+#+END_SRC
+
+lastz:
+
+For lastz I didn't have to do much except modify the kind of output I wanted
+#+BEGIN_SRC
+lastz $CHR_11 $CHR_17 \
+  --gfextend --chain --gapped \
+  --format=general-:name2,size2,zstart2+,end2+,strand2,name1,size1,zstart1,end1,identity
+#+END_SRC
+
+Alignment output
+#+BEGIN_SRC
+17	5955	13  	1002	+	11	12087	9385	10298	591/879 	67.2%
+17	5955	2657	4052	+	11	12087	10707	11990	879/1219	72.1%
+#+END_SRC
+
+Generally I found that for mashap the alignments from CHR 11 aligned to the same region in CHR 17
+For the region covered on chr 17 is generally the same but shifted about 400 bases in mashmap
+for chr 11 it ends around base 12,000 in both but starts later by about 9000 bases in lastz 
+
+PS:
+In case you would be curious, when calling lastz without --gfextend --chain --gapped we get
+
+#+BEGIN_SRC
+11	12087	9385	10298	+	17	5955	13	1002	591	1023	22678	591/879	67.2%
+11	12087	7823	7965	+	17	5955	1330	1486	98	156	5608	98/142	69.0%
+11	12087	7789	7952	+	17	5955	1330	1493	101	169	4914	101/157	64.3%
+11	12087	7795	7957	+	17	5955	1330	1496	109	168	6270	109/160	68.1%
+11	12087	7781	7961	+	17	5955	1330	1531	128	201	7228	128/180	71.1%
+11	12087	7804	7960	+	17	5955	1331	1489	96	160	5002	96/154	62.3%
+11	12087	7770	7921	+	17	5955	1339	1496	100	157	5691	100/151	66.2%
+11	12087	7775	7922	+	17	5955	1340	1493	101	153	5795	101/147	68.7%
+11	12087	7809	7959	+	17	5955	1340	1496	94	156	4844	94/150	62.7%
+11	12087	7785	7968	+	17	5955	1340	1552	127	214	6351	127/181	70.2%
+11	12087	7815	7961	+	17	5955	1340	1486	100	148	6573	100/144	69.4%
+11	12087	7844	7961	+	17	5955	1341	1462	78	121	4861	78/117	66.7%
+11	12087	7834	7961	+	17	5955	1341	1472	82	131	5059	82/127	64.6%
+11	12087	7768	7961	+	17	5955	1353	1563	123	210	6564	123/193	63.7%
+11	12087	7775	7961	+	17	5955	1356	1549	124	197	7179	124/182	68.1%
+11	12087	7848	7958	+	17	5955	1375	1489	65	114	3371	65/110	59.1%
+11	12087	10707	11990	+	17	5955	2657	4052	879	1459	38005	879/1219	72.1%
+#+END_SRC
