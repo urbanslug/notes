@@ -1,0 +1,127 @@
+#+TITLE: MashMap Math
+#+LATEX: \setlength\parindent{0pt}
+
+#+LATEX: \newpage
+
+* Preliminaries
+** Read error model
+
+Error rate per base $\epsilon \in [0,1]$.
+Therefore, the expected number of errors in a k-mer is therefore $k \cdot \epsilon$.
+Expected number of no errors is $e^{- \epsilon k}$ <why no error rate?>
+
+** Jaccard Similarity
+For two sets X and Y.
+
+\begin{equation}
+J(X,Y) = \frac{X \cap Y}{X \cup Y}
+\end{equation}
+
+
+Assume
+ - we sequenced a sample $B$
+ - length of a read alignment $\approx$ read length
+ - $A$ is a read derived from $B_i$ and $A$ is a length $|A|$ substring of B starting as position $i$.
+
+If:
+ - c is the number of error free k-mers in A
+ - n is the total k-mers in A
+then
+ - $\frac {c}{n} = e^{- \epsilon k}$ /also called the k-mer survivability rate./
+
+this assumes that k is large enough so that k-mers in A or B_i are unique.
+
+
+Given
+ - $|A| = |B_i|$
+ - $J(A, B_i) = \frac{c}{2n-c}$
+
+We derive $\mathcal{G}$ and F to estimate J and $\epsilon$
+
+\begin{equation}
+\mathcal{G}(\epsilon, k) = \frac{1}{2e^{\epsilon k} - 1}
+\ and\ 
+F(J, k) = \frac{-1}{k} \times log (\frac{2j}{1+j})
+\end{equation}
+
+...
+
+** MinHash approximation
+We take $S(A)$ as a simple random sample over, universe $U$, a totally ordered set of all possible items.
+$S(A)$ called the sketch of A is the set of the smallest s hashes items in A i.e
+S(A) = min_s{\Omega(x) : x \in A}
+
+
+$s$ is a fixed parameter
+
+$\Omega : U \rightarrow U$ permutation chosen uniformly at random
+
+For sets A and B: $P(\min\limits_{x \in A}\Omega(x) = \min\limits_{x \in B_i}\Omega(x)) = J(A, B)$
+
+and
+
+\begin{equation}
+\frac{|S(A \cup B_i) \cap S(A) \cap S(Bi) ) |}{|S(A \cup B_i)|}
+\end{equation}
+
+ - Numerator is called the count of shared sketch elements
+ - Denominator is called the MinHash sketch size
+
+Add equations for the shared sketch size
+   
+** Winnowing
+
+Unlike minhashing it bounds the maximum positional gap between any two
+consecutive hashes.
+It works by sampling the smallest hashes item in every consecutive fixed size
+sliding window.
+
+Let $A_0$ denote the set of all k-mer tuples $\langle k_i, i \rangle$ in a sequence $A$
+ - $i$ is the k-mer position
+ - $k_i$ is the k-mer at position i
+
+Let:
+ - $w$ is the window sized used for winnowing
+ - $K_j$ set of w consecutive k-mer **tuples** starting at position j in A
+   * that is K_j = {\langle k_i, i\rangle : j \leq i \le j+w}
+
+Assume $\Omega$ is a hash function defined as a random permutation
+The set of /minimizers/ sampled by the winnowing algorithm in sequence $A$ is \\
+$W(A) = \{ \min\limits_{\langle k,i\rangle \in K_j} \langle \Omega(k),i \rangle : 0 \leq j \leq |A_0| - 1 \}$, where
+
+\begin{equation}
+min( \langle k_1, i_1 \rangle, \langle k_2, i_2 \rangle ) =
+\begin{cases}
+  \langle k_1, i_1 \rangle \ k_1 < k_2 \ or \ (k_1=k_2 \ and \ i_1>i_2)\\
+  \langle k_2, i_2 \rangle \ otherwise;
+\end{cases}
+\end{equation}
+
+
+The expected set count of minimizers selected from a random sequence A is
+$\frac{2|A_0|}{w}$.
+
+$W(A)$ can be computed effeciently in $O(|A|)$ time and $O(w)$ space using a
+**double ended queue**, as sequence $A$ is read in streaming fashion.
+
+* Problem formulation
+
+Let $B_i$ denote the substrings of size $|A|$ in $B$ starting at /i/ and $(0 \leq i \leq |B| - |A|)$.
+Given $\delta$ as the margin of error in Jaccard estimation using a 90% confidence interval.
+For a given /k/ we seek all mapping positions /i/ in /B/ such that
+
+\begin{equation}
+J(A, B_i) \geq \mathcal{G}(\epsilon_{max}, k) - \delta
+\end{equation}
+
+* MashMap algorithm
+
+We aim to estimate $J(A, B_i)$ efficiently using MinHash and winnowing.
+We will also compute an estimate of the aligned error rate $\epsilon$ for each
+mapping reported.
+  
+** Definitions
+Let $W(A)$ be te set of minimizers for a read $A$ using the winnowing method
+with window size $w$.
+
+
