@@ -53,7 +53,11 @@ For lastz I didn't have to do much except modify the kind of output I wanted
 #+BEGIN_SRC
 lastz $CHR_11 $CHR_17 \
   --gfextend --chain --gapped \
-  --format=general-:name2,size2,zstart2+,end2+,strand2,name1,size1,zstart1,end1,identity
+  --format=general-:name2,size2,zstart2+,end2+,strand2,name1,size1,zstart1,end1,id% \
+  | awk '{
+          gsub(/%/, "", $10);
+          print $0;
+         }'
 #+END_SRC
 
 Alignment output

@@ -5,6 +5,10 @@
 # Fasta
 FIRST=${DATASET_DIR}/yeast/first.fasta
 SECOND=${DATASET_DIR}/yeast/second.fasta
+CER=${DATASET_DIR}/yeast/cerevisiae.pan.fa
+
+CHR_11=${DATASET_DIR}/Flavia/chr11littleregion.fa
+CHR_17=${DATASET_DIR}/Flavia/chr17littleregion.fa
 
 LPA=${DATASET_DIR}/human/LPA.fa
 LPA_SUBSET=${DATASET_DIR}/human/LPA.subset.f

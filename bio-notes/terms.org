@@ -1,33 +1,85 @@
-neoocentromere
-cytobands
-VNTRs
+#+TITLE: Terms
 
-How would you detect a panlindrome?
+* Terms
+** Chromosome
+*** Acrocentric chromosome
+A chromosome in which the centromere is located quite near one end of the chromosome.
+If the p (short) arm is so short that it is hard to observe, but still present, then the chromosome is acrocentric.
 
-homology
-VNTR
+Humans normally have five pairs of acrocentric chromosomes: 13, 14, 15, 21, 22 & Y.
 
-uchromatic
+*** Acentric
+If a chromosome lacks a centromere, it is said acentric.
 
-sement duplication
-Glen
+*** p to q arms of the chromosome
+p is the short arm and q is the logn arm
 
-p to q
+*** neocentromere
+new centromeres that form at a place on the chromosome that is usually not
+centromeric.
+They typically arise due to disruption of the normal centromere.
+Unlike most normal centromeres, neocentromeres do not contain satellite
+sequences that are highly repetitive but instead consist of unique sequences.
 
-cell line
+*** Holocentric
+Different than monocentric chromosomes in holocentric chromosomes, the entire
+length of the chromosome acts as the centromere. 
 
-homozygous
+** Setellite DNA
+Satellite DNA consists of very large arrays of tandemly repeating, non-coding DNA.
+Satellite DNA is the main component of functional centromeres, and form the main structural constituent of heterochromatin.
 
-F generations
-QTL
+** Tandem repeats
+occur in DNA when a pattern of one or more nucleotides is repeated and the repetitions are directly adjacent to each other
 
-micro sattelites
+** Variable Number Tandem Repeats (VNTR)
+A variable number tandem repeat (or VNTR) is a location in a genome where a short nucleotide sequence is organized as a tandem repeat.
+These can be found on many chromosomes, and often show variations in length (number of repeats) among individuals. 
+
+** homozygous
+having two identical alleles of a particular gene or genes.
+
+** Panlindrome (DNA)
+Reading in a certain direction (e.g. 5' to 3') on one strand matches the sequence reading in the opposite direction (e.g. 5' to 3') on the complementary strand.
+
+A (single-stranded) nucleotide sequence is said to be a palindrome if it is equal to its reverse complement.
+For example, the DNA sequence ACCTAGGT is palindromic because its
+nucleotide-by-nucleotide complement is TGGATCCA, and reversing the order of the
+nucleotides in the complement gives the original sequence. 
+
+** ultra long sequence reads
+** ONT and HiFi
+Oxford Nanopore
+
+** cell line
+Cell lines are cultures of animal cells that can be propagated repeatedly and sometimes indefinitely. 
+
+** cytobands
+https://software.broadinstitute.org/software/igv/Cytoband
+A cytoband file is a five-column tab-delimited text file. Each row of the file describes the position of a cytogenetic band.
+he Cytoband file format is used to specify the cytobands for a reference genome defined by a .genome file.
+IGV uses this file to draw the chromosome ideograms for the genome.
+   
+** Cytogenic bands
+Each chromosome arm is divided into regions, or cytogenetic bands, that can be seen using a microscope and special stains.
+The cytogenetic bands are labeled p1, p2, p3,   q1, q2, q3, etc., counting from the centromere out toward the telomeres.
+At higher resolutions, sub-bands can be seen within the bands.
+The sub-bands are also numbered from the centromere out toward the telomere.
+
+** Segment duplication
+** autosome
+An autosome is any chromosome that is not a sex chromosome (an allosome).
+** allosome
+A sex chromosome, (also referred to as an allosome, heterotypical chromosome, or
+heterochromosome, or idiochromosome) is a chromosome that differs from an ordinary autosome in form, size, and behavior.
+** uchromatic
+** Homology
+** F generations   
+** QTL (Quantitative Trait Loci)
+** micro satellites
+** variant tracks
 
 
-ONT and HiFi
-
-ulra llong sequence reads
-
-care package
-
-autosome
+* Helpful links
+ - [[https://www.bx.psu.edu/old/courses/bx-fall08/definitions.html][A Computer Scientist's Dictionary for Genomics]]
+ -

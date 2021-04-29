@@ -119,9 +119,19 @@ J(A, B_i) \geq \mathcal{G}(\epsilon_{max}, k) - \delta
 We aim to estimate $J(A, B_i)$ efficiently using MinHash and winnowing.
 We will also compute an estimate of the aligned error rate $\epsilon$ for each
 mapping reported.
-  
-** Definitions
-Let $W(A)$ be te set of minimizers for a read $A$ using the winnowing method
-with window size $w$.
 
+** Definitions
+Let $W(A)$ be the set of minimizers for a read $A$ using the winnowing method
+with window size $w$.
+We sketch $W(A)$ instead of sketching $A$ itself
+Assuming $s$ is a fixed param $S(W(A))$ is the set of the s smallest hashes k-mers sampled using winnowing of $A$
+i.e $S(W(A)) = min_s\{h: \langle h, pos \rangle \in W(A)}$
+
+We can have the winnowed minhash estimate for J(A, B_i) as:
+
+\begin{equation}
+J(A, B_i) = \frac{|S(W(A) \cup W(B_i)) \cap S(W(A)) \cap S(W(B_i)) |}{|S(W(A) \cup W(B_i))|}
+\end{equation}
+
+** Indexing the reference
 
