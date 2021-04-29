@@ -1,6 +1,6 @@
 * Pinentry, GPG and SSH
 
-Force gnupg to use pinentry and not Gnome keyring add this to $~/.gnupg/gpg-agent.conf$
+Force gnupg to use pinentry and not Gnome keyring add this to ~~/.gnupg/gpg-agent.conf~
 
 #+BEGIN_SRC
 # force the use of pinentry
@@ -12,12 +12,12 @@ max-cache-ttl 21600
 #+END_SRC
 
 Force the use of pinentry for SSH agent and not Gnome keyring
-cop $/etc/xdg/autostart/gnome-keyring-ssh.desktop$ to $~/.config/autostart/$ and
-append $Hidden=true$ to the file.
+cop ~/etc/xdg/autostart/gnome-keyring-ssh.desktop~ to ~~/.config/autostart/~ and
+append ~Hidden=true~ to the file.
 Source
  - https://wiki.archlinux.org/index.php/GNOME/Keyring#Disable_keyring_daemon_components
 
-and add the below to the $~/.profile$, $~/.bashrc$ or $~/.zshrc$ to start ssh-agent
+and add the below to the ~~/.profile~, ~~/.bashrc~ or ~~/.zshrc~ to start ssh-agent
 
 #+BEGIN_SRC
 export GPG_TTY=$(tty)
@@ -25,9 +25,9 @@ export GPG_TTY=$(tty)
 # start ssh agent
 # eval `ssh-agent -s`
 if ! pgrep -u "$USER" ssh-agent > /dev/null; then
-	ssh-agent > ~/.ssh-agent-thing
+    ssh-agent -t 1h > "$XDG_RUNTIME_DIR/ssh-agent.env"
 fi
-if [[ "$SSH_AGENT_PID" == "" ]]; then
-	eval "$(<~/.ssh-agent-thing)"
+if [[ ! "$SSH_AUTH_SOCK" ]]; then
+    source "$XDG_RUNTIME_DIR/ssh-agent.env" >/dev/null
 fi
 #+END_SRC
