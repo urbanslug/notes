@@ -1,0 +1,17 @@
+#+TITLE: Writing LaTeX in org
+
+Tell emacs where to find your library/bibliography in the emacs config.
+~(setq org-ref-default-bibliography '("~/src/papers/library.bib"))~
+
+Assuming emacs is the editor in use.
+
+Adding and sorting citations
+
+~C-c ]~ opens an interface to select and insert citations.
+Pick a citation using ~Enter~ or use ~C-SPC~ to pick multiple citations then
+press ~Enter~ to insert them. In case you feel the citations need to have some
+order, sort them by publication date using ~org-ref-sort-citation-link~ or
+~S-up~ (S is shift).
+
+To generate the pdf switch to main.org and run M-x org-latex-export-to-latex
+then from the terminal run make.

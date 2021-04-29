@@ -10,3 +10,9 @@ Lines themselves
 #+BEGIN_SRC
 <( printf %s\\n line1 line2 )
 #+END_SRC
+
+Replace all spaces with commas (PAF to CSV)
+#+BEGIN_SRC
+sed -r 's/ +/,/g' <input> > <output>   # for spaces
+sed -r 's/\t+/,/g' <input> > <output>  #for tabs
+#+END_SRC
