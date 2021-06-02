@@ -1,0 +1,171 @@
+#+TITLE: Rust Primer
+#+SUBTITLE: Handy rust stuff I keep forgetting
+#+AUTHOR: Njagi Mwaniki
+#+OPTIONS: date:nil
+
+
+
+* Packaging
+** New project
+Cargo
+
+#+BEGIN_SRC bash
+rustc <files>         # compile files
+cargo build           # compile project
+cargo build --release # compile with optimizations
+cargo run             # compile and run
+cargo check           # Checks that code compiles but doesn't produce and executable
+cargo new             # generate project
+cargo doc --open      # build documentation provided by all of your dependencies locally and open it in your browser
+#+END_SRC
+
+Executable
+
+#+BEGIN_SRC bash
+cargo new ...
+#+END_SRC
+
+Library
+
+#+BEGIN_SRC bash
+cargo new ...
+#+END_SRC
+
+** Dependencies
+
+** cargo.toml
+
+* Syntax
+** Range
+
+exclusive
+#+BEGIN_SRC rust
+<start>..<end>
+#+END_SRC 
+
+inclusive
+#+BEGIN_SRC rust
+<start>..=<end>
+#+END_SRC 
+
+** Loops
+loop
+#+BEGIN_SRC rust
+loop {
+  /*
+    The break statement can be used to exit a loop at anytime,
+    whereas the continue statement can be used to skip the rest 
+    of the iteration and start a new one.
+   */
+}
+#+END_SRC 
+
+for
+#+BEGIN_SRC rust
+for i in 0..max {
+  
+}
+#+END_SRC 
+
+** Strings & chars
+`u8` to `char`
+#+BEGIN_SRC rust
+<u8> as char
+#+END_SRC 
+
+** Variables
+#+BEGIN_SRC rust
+let <name>: type = <value>;
+#+END_SRC
+
+** Types
+
+** Array
+#+BEGIN_SRC rust
+let <var_name>: [<type_of_content>; <size>] = <value>;
+#+END_SRC
+Initialize 100 value array with 0 repeated 100 times
+
+#+BEGIN_SRC rust
+let mut tally_array: [usize; 100] = [0; 100];
+#+END_SRC
+
+** Vector
+initialize a vector of given number of values use vec! macro
+#+BEGIN_SRC rust
+vec![0; len]
+#+END_SRC
+** Imports
+#+BEGIN_SRC rust
+use <import>;
+#+END_SRC
+
+** Comments
+Single line
+#+BEGIN_SRC rust
+//
+#+END_SRC
+
+Multi line
+#+BEGIN_SRC rust
+/*
+
+*/
+#+END_SRC
+
+* Tests
+** Running tests
+
+Running a specific ignored test and have it print stuff
+
+#+BEGIN_SRC bash
+cargo test <test_name> -- --ignored --nocapture  
+#+END_SRC
+
+Running a regular test with $nocapture$
+
+#+BEGIN_SRC bash
+cargo test test_run_length_encode -- --nocapture
+#+END_SRC
+
+Running a specific test
+
+#+BEGIN_SRC bash
+cargo test <test_name>
+#+END_SRC
+
+** Writing tests
+
+Just tests
+
+#+BEGIN_SRC rust
+#[cfg(test)]
+mod tests {
+    
+    use super::*;
+
+    #[test]
+    fn test_run_length_encode() {
+        assert_eq!(2 + 2, 4);
+    }
+}
+#+END_SRC
+
+Ignoring tests
+
+#+BEGIN_SRC rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_run_length_encode() {
+        assert_eq!(2 + 2, 4);
+    }
+
+    // Ignore tests
+    #[ignore]
+    #[test]
+    fn test_run_length_encode() {
+        assert_eq!(2 + 2, 4);
+    }
+}
+#+END_SRC
