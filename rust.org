@@ -4,7 +4,6 @@
 #+OPTIONS: date:nil
 
 
-
 * Packaging
 ** New project
 Cargo
@@ -36,6 +35,18 @@ cargo new ...
 ** cargo.toml
 
 * Syntax
+** Closures
+Fn taking a lambda
+
+#+BEGIN_SRC rust
+pub fn affine_wavefronts_align<T>(
+    affine_wavefronts: AffineWavefronts,
+    match_lambda: T,
+    traceback_lambda: T,
+    pattern_length: i32,
+    text_length: i32 ) where T: Fn(i32, i32) -> bool {}
+#+END_SRC 
+
 ** Range
 
 exclusive
@@ -67,6 +78,20 @@ for i in 0..max {
 }
 #+END_SRC 
 
+** Iterators
+With side effects use `for_each`
+
+#+BEGIN_SRC rust
+let my_str: &[u8] = "ACTGA".as_bytes();
+my_str.iter().for_each(|a| println!("{}", a));
+#+END_SRC 
+
+Without side effects go with `map`
+#+BEGIN_SRC rust
+let my_str: &[u8] = "ACTGA".as_bytes();
+let char_vec: Vec<u8> = my_str.iter().map(|a| a+2).collect::<Vec<u8>>();
+#+END_SRC
+
 ** Strings & chars
 `u8` to `char`
 #+BEGIN_SRC rust
@@ -95,6 +120,13 @@ initialize a vector of given number of values use vec! macro
 #+BEGIN_SRC rust
 vec![0; len]
 #+END_SRC
+
+
+Construct a new, empty Vec<T> with the specified capacity.
+#+BEGIN_SRC rust
+let mut vec = Vec::with_capacity(10);
+#+END_SRC
+
 ** Imports
 #+BEGIN_SRC rust
 use <import>;
@@ -169,3 +201,36 @@ mod tests {
     }
 }
 #+END_SRC
+* Error handling
+
+Switching from an ~expect~ call to a ~match~ expression is how you generally
+move from crashing on an error to handling the error.
+
+#+BEGIN_SRC rust
+  // // declare string var
+  let mut guess = String::new();
+
+  // read user input from stdin
+  io::stdin().read_line(&mut guess).expect("Failed to read line");
+
+  // convert the user input to u32
+  let guess: u32 = match guess.trim().parse() {
+                Ok(k) => k,
+                Err(_) => {
+                    println!("Please enter a number");
+                    continue;
+                },
+            };
+#+END_SRC
+
+* Terms
+Associated function: A function implemented on a type
+Some languages call it a static method.
+e.g ~String::new();~ is implemented on the ~String~ type. 
+
+Result is an error handling type enum
+It's cariants are
+Ok(<val>)
+Err
+
+Methods of the result type include: ~expect~,
